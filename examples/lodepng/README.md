@@ -1,6 +1,6 @@
 Feb 2021
 
-This subdirectory contains (older) versions of [LodePNG](https://github.com/lvandeve/lodepng), an open source png encoder/decoder, before and after conversion from C (and a little bit of C++) to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus). The conversion was done using the [scpptool](https://github.com/duneroadrunner/scpptool) tool.
+This subdirectory contains versions of [LodePNG](https://github.com/lvandeve/lodepng), an open source png encoder/decoder, before and after conversion from C (and a little bit of C++) to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus). The conversion was done using the [scpptool](https://github.com/duneroadrunner/scpptool) tool.
 
 Note that this tool uses the "clang libTooling" library and has only been tested on linux (as far as I know).
 
