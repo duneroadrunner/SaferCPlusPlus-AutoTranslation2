@@ -28,7 +28,7 @@ This will prevent the raw pointer declaration from being modified during the con
 
     #include "msetl.h"
 
-at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the converted file. Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
+at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the [converted file](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/master/examples/lodepng/lodepng_translated/src/examples/example_sdl.cpp). Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
 
 So it turns out that example_sdl.cpp is the only file in our example needing such annotations. Next its time to do the conversion. Before executing a conversion we always make a(nother) backup copy of the source files in case we need to tweak the files and repeat the conversion (which is likely). The format of the conversion command is 
 
