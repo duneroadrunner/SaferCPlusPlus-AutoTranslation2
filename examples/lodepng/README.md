@@ -2,8 +2,6 @@ Feb 2021
 
 This subdirectory contains versions of [LodePNG](https://github.com/lvandeve/lodepng), an open source png encoder/decoder, before and after conversion from C (and a little bit of C++) to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus). The conversion was done using the [scpptool](https://github.com/duneroadrunner/scpptool) tool.
 
-Note that this tool uses the "clang libTooling" library and has only been tested on linux (as far as I know).
-
 The LodePNG project contains several example programs demonstrating the use of the library. Here we choose just one to convert. Conversion of the others would be similar. The example we'll use is contained in the example_sdl.cpp file. 
 
 So here we'll explain the steps used to do the conversion. The first step is to make a copy of the project in a new directory. Next we verify that we can build the program with the compiler used by the conversion tool (scpptool). The version of scpptool we'll be using uses llvm8. The example uses libSDL so make sure you have it installed. (Otherwise you can use the example_decode.cpp example instead.) From the src/examples subdirectory where the example_sdl.cpp file is located we would execute a command like: 
