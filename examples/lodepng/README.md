@@ -26,7 +26,7 @@ declares a technically unsafe raw pointer variable that would by default get con
 
 This will prevent the raw pointer declaration from being modified during the conversion process. It will also direct scpptool not to complain about the code being unsafe when used in its (default) static safety verification mode. The check suppression directive is an element provided by the SaferCPlusPlus library, so any file that uses it needs to include the necessary header file. So we add an include directive:
 
-    #include "msetl.h"
+    #include "mselegacyhelpers.h"
 
 at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the [converted file](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/master/examples/lodepng/lodepng_translated/src/examples/example_sdl.cpp). Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
 
