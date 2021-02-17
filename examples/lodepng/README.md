@@ -60,7 +60,7 @@ The other uses of `void*` are similar. The another thing not addressed by the co
 
       ((uivector*)p)->size = ((uivector*)p)->allocsize = 0;
 
-contains hard casts of pointer paramter `p`. It turns out that this is just because `p` was originally declared as a `void*`, but we just changed that, so this hard cast is now redundant, so we can just get rid of it and the other similar ones.
+contains hard casts of pointer paramter `p`. It turns out that this is just because `p` was originally declared as a `void*`. But we just changed that, so this hard cast is now redundant, so we can just get rid of it and the other similar ones.
 
 So now (after, as always, making a(nother) backup) we can execute the conversion and try to compile again. But we still get one last compile error. A "no matching function for call" error that occurs around lines 112 and 113 of the converted example_sdl.cpp:
 
@@ -71,9 +71,9 @@ We can look at the declaration of the `lodepng::decode()` function on line 214 o
 
     unsigned decode(mse::mstd::vector<unsigned char>&  out, mse::TRegisteredObj<unsigned int >&  w, mse::TRegisteredObj<unsigned int >&  h, const mse::mstd::vector<unsigned char>&  in, LodePNGColorType colortype = LCT_RGBA, unsigned bitdepth = 8);
 
-where we see that the types of the `w` and `h` parameters are of type `mse::TRegisteredObj<unsigned int >&` where the `w` and `h` arguments passed are (still) of type `unsigned int`. It's a shotrcoming of the converter that these arguments weren't automatically converted to the type of the reference parameters.
+where we see that the `w` and `h` parameters are of type `mse::TRegisteredObj<unsigned int >&` where the `w` and `h` arguments passed are (still) of type `unsigned int`. It's a shortcoming of the converter that these arguments weren't automatically converted to the type of the reference parameters.
 
-The reason for the failure is that the conversion is (currently) done one "translation unit" (i.e. source file) at a time, but the lodepng.h file is included in more than one source file. When converting the lodepng.cpp source file, the converter determined that, for safety reasons, the parameters needed to be converted from `unsigned int&` to `mse::TRegisteredObj<unsigned int >&`. But when converting the example_sdl.cpp source file, the converter doesn't have visibility into (the safety issue in) the lodepng.cpp source file and didn't see any compelling safety reason in its own source file to require the conversion. Note that in this case it's only an issue because of the (non-const native) reference, which is a C++ construct. If the source had been pure C code, presumably those references would have been pointers and there would have been no issue.
+The reason for the shortcoming is that the conversion is (currently) done one "translation unit" (i.e. source file) at a time, but the lodepng.h header file is included in more than one source file. When converting the lodepng.cpp source file, the converter determines that, for safety reasons, the parameters need to be converted from `unsigned int&` to `mse::TRegisteredObj<unsigned int >&`. But when converting the example_sdl.cpp source file, the converter doesn't have visibility into (the safety issue in) the lodepng.cpp source file and doesn't see any compelling safety reason in its own source file to require the conversion. Note that in this case it's only an issue because of the (non-const native) reference, which is a C++ construct. If the source had been pure C code, presumably those references would have been pointers and there would have been no issue.
 
 So anyway, we can just manually change the declaration of the argument variables on line 112 of the converted example_sdl.cpp file to match the declaration of the function parameters like so:
 
