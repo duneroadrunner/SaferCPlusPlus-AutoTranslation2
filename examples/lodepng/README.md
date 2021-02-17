@@ -20,7 +20,7 @@ Then we need to go through the project source files and identify any elements in
 
     SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
 
-declares a technically unsafe raw pointer variable that would by default get converted to a safe pointer type. But the the SDL interface necessitates the use of this (unsafe) raw pointer, so we'll add a "[check suppression](https://github.com/duneroadrunner/scpptool#local-suppression-of-the-checks)" prefix like so:
+declares a technically unsafe raw pointer variable that would by default get converted to a safe pointer type. But the SDL interface necessitates the use of this (unsafe) raw pointer, so we'll add a "[check suppression](https://github.com/duneroadrunner/scpptool#local-suppression-of-the-checks)" prefix like so:
 
     MSE_LH_SUPPRESS_CHECK_IN_XSCOPE SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
 
