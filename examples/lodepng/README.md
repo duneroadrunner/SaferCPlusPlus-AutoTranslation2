@@ -14,7 +14,7 @@ and hopefully get no errors. Now we can verify that the program we just compiled
 
 The program should display a little example graphic.
 
-Next we need to prepare the project for conversion. First we need to copy the msetl directory containing the SaferCPlusPlus header files to the src subdirectory of our LodePNG project. 
+Next we need to prepare the project for conversion. First we need to add a subdirectory named "msetl" containing the [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) header files to the src subdirectory of our LodePNG project. 
 
 Then we need to go through the project source files and identify any elements in the code that should not be converted to a safe replacement. For example, our program uses the SDL library to display the graphics on the screen. But the SDL library has an interface that requires use of unsafe elements like raw pointers and the `SDL_Event` type. So we annotate the use of those elements with "check suppression" directives from the SaferCPlusPlus library. For example, line 55 in the example_sdl.cpp file:
 
