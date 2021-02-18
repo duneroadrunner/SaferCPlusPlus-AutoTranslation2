@@ -29,7 +29,7 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 */
 
 
-#include "msetl.h"
+#include "mselegacyhelpers.h"
 #include "lodepng.h"
 
 #include <limits.h>
@@ -2458,7 +2458,7 @@ mse::lh::TLHNullableAnyPointer<unsigned char>  lodepng_chunk_data(mse::lh::TLHNu
   return ((chunk) + (8));
 }
 
-const mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_data_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk)
+mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_data_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk)
 {
   return ((chunk) + (8));
 }
@@ -2486,7 +2486,7 @@ mse::lh::TLHNullableAnyRandomAccessIterator<unsigned char>  lodepng_chunk_next(m
   return ((chunk) + (total_chunk_length));
 }
 
-const mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_next_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk)
+mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_next_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk)
 {
   unsigned total_chunk_length = lodepng_chunk_length(chunk) + 12;
   return ((chunk) + (total_chunk_length));

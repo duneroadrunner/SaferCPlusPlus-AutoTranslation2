@@ -34,7 +34,7 @@ If multiple filenames are given to the command line, it shows all of them.
 Press any key to see next image, or esc to quit.
 */
 
-#include "msetl.h"
+#include "mselegacyhelpers.h"
 #include "lodepng.h"
 
 #include <iostream>

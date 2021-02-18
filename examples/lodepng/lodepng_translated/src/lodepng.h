@@ -27,7 +27,7 @@ freely, subject to the following restrictions:
 #define LODEPNG_H
 
 
-#include "msetl.h"
+#include "mselegacyhelpers.h"
 #include <string.h> /*for size_t*/
 
 extern const char*  LODEPNG_VERSION_STRING;
@@ -732,7 +732,7 @@ unsigned char lodepng_chunk_safetocopy(mse::lh::TXScopeLHNullableAnyPointer<cons
 
 /*get pointer to the data of the chunk, where the input points to the header of the chunk*/
 mse::lh::TLHNullableAnyPointer<unsigned char>  lodepng_chunk_data(mse::lh::TXScopeLHNullableAnyPointer<unsigned char>  chunk);
-const mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_data_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk);
+mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_data_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk);
 
 
 /*returns 0 if the crc is correct, 1 if it's incorrect (0 for OK as usual!)*/
@@ -745,7 +745,7 @@ void lodepng_chunk_generate_crc(mse::lh::TLHNullableAnyRandomAccessIterator<unsi
 
 /*iterate to next chunks. don't use on IEND chunk, as there is no next chunk then*/
 mse::lh::TLHNullableAnyRandomAccessIterator<unsigned char>  lodepng_chunk_next(mse::lh::TLHNullableAnyRandomAccessIterator<unsigned char>  chunk);
-const mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_next_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk);
+mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  lodepng_chunk_next_const(mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  chunk);
 
 
 /*
