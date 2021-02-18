@@ -18,15 +18,21 @@ Next we need to prepare the project for conversion. First we need to add a subdi
 
 Then we need to go through the project source files and identify any elements in the code that should not be converted to a safe replacement. For example, our program uses the SDL library to display the graphics on the screen. But the SDL library has an interface that requires use of unsafe elements like raw pointers and the `SDL_Event` type. So we annotate the use of those elements with "check suppression" directives from the SaferCPlusPlus library. For example, line 55 in the example_sdl.cpp file:
 
+```cpp
     SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
+```
 
 declares a technically unsafe raw pointer variable that would by default get converted to a safe pointer type. But the SDL interface necessitates the use of this (unsafe) raw pointer, so we'll add a "[check suppression](https://github.com/duneroadrunner/scpptool#local-suppression-of-the-checks)" prefix like so:
 
+```cpp
     MSE_LH_SUPPRESS_CHECK_IN_XSCOPE SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
+```
 
 This will prevent the raw pointer declaration from being modified during the conversion process. It will also direct scpptool not to complain about the code being unsafe when used in its (default) static safety verification mode. The check suppression directive is an element provided by the SaferCPlusPlus library, so any file that uses it needs to include the necessary header file. So we add an include directive:
 
+```cpp
     #include "mselegacyhelpers.h"
+```
 
 at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the [converted file](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/master/examples/lodepng/lodepng_translated/src/examples/example_sdl.cpp). Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
 
@@ -48,26 +54,36 @@ So the new compile command looks like:
 
 But attempting to compile the converted source files results in some compile errors. This is because there are a few items that the converter tool is unable to properly address. These items need to be addressed manually. One of those items is the use of `void*`. For example, line 144 of the lodepng.cpp file:
 
+```cpp
     static void uivector_cleanup(void* p)
+```
 
 uses `void*` as the parameter type. Fortunately in this case the type doesn't actually need to be `void*`, and we can go back to our backup copy and just replace the `void` part with the actual used type. So we change the line to
 
+```cpp
     static void uivector_cleanup(uivector* p)
+```
 
 The other uses of `void*` are similar. The another thing not addressed by the converter is certain "hard" casts. Line 146 of the lodepng.cpp file:
 
+```cpp
       ((uivector*)p)->size = ((uivector*)p)->allocsize = 0;
+```
 
 contains hard casts of pointer paramter `p`. It turns out that this is just because `p` was originally declared as a `void*`. But we just changed that, so this hard cast is now redundant, so we can just get rid of it and the other similar ones.
 
 So now (after, as always, making a(nother) backup) we can execute the conversion and try to compile again. But we still get one last compile error. A "no matching function for call" error that occurs around lines 112 and 113 of the converted example_sdl.cpp:
 
+```cpp
     unsigned int w = 0/*auto-generated init val*/; unsigned int h = 0/*auto-generated init val*/;
     unsigned error = lodepng::decode(image, w, h, buffer); //decode the png
+```
 
 We can look at the declaration of the `lodepng::decode()` function on line 214 of the converted lodepng.h file: 
 
+```cpp
     unsigned decode(mse::mstd::vector<unsigned char>&  out, mse::TRegisteredObj<unsigned int >&  w, mse::TRegisteredObj<unsigned int >&  h, const mse::mstd::vector<unsigned char>&  in, LodePNGColorType colortype = LCT_RGBA, unsigned bitdepth = 8);
+```
 
 where we see that the `w` and `h` parameters are of type `mse::TRegisteredObj<unsigned int >&` where the `w` and `h` arguments passed are (still) of type `unsigned int`. It's a shortcoming of the converter that these arguments weren't automatically converted to the type of the reference parameters.
 
@@ -75,8 +91,10 @@ The reason for the shortcoming is that the conversion is (currently) done one "t
 
 So anyway, we can just manually change the declaration of the argument variables on line 112 of the converted example_sdl.cpp file to match the declaration of the function parameters like so:
 
+```cpp
     mse::TRegisteredObj<unsigned int > w = 0/*auto-generated init val*/; mse::TRegisteredObj<unsigned int > h = 0/*auto-generated init val*/;
     unsigned error = lodepng::decode(image, w, h, buffer); //decode the png
+```
 
 Now the code should compile and work. 
 
