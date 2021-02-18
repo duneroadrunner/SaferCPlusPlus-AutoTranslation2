@@ -2,8 +2,6 @@ Feb 2021
 
 This subdirectory contains versions of [LodePNG](https://github.com/lvandeve/lodepng), an open source png encoder/decoder, before and after conversion from C (and a little bit of C++) to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus). The conversion was done using the [scpptool](https://github.com/duneroadrunner/scpptool) tool.
 
-Note that this tool uses the "clang libTooling" library and has only been tested on linux (as far as I know).
-
 The LodePNG project contains several example programs demonstrating the use of the library. Here we choose just one to convert. Conversion of the others would be similar. The example we'll use is contained in the example_sdl.cpp file. 
 
 So here we'll explain the steps used to do the conversion. The first step is to make a copy of the project in a new directory. Next we verify that we can build the program with the compiler used by the conversion tool (scpptool). The version of scpptool we'll be using uses llvm8. The example uses libSDL so make sure you have it installed. (Otherwise you can use the example_decode.cpp example instead.) From the src/examples subdirectory where the example_sdl.cpp file is located we would execute a command like: 
@@ -16,21 +14,21 @@ and hopefully get no errors. Now we can verify that the program we just compiled
 
 The program should display a little example graphic.
 
-Next we need to prepare the project for conversion. First we need to copy the msetl directory containing the SaferCPlusPlus header files to the src subdirectory of our LodePNG project. 
+Next we need to prepare the project for conversion. First we need to add a subdirectory named "msetl" containing the [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) header files to the src subdirectory of our LodePNG project. 
 
 Then we need to go through the project source files and identify any elements in the code that should not be converted to a safe replacement. For example, our program uses the SDL library to display the graphics on the screen. But the SDL library has an interface that requires use of unsafe elements like raw pointers and the `SDL_Event` type. So we annotate the use of those elements with "check suppression" directives from the SaferCPlusPlus library. For example, line 55 in the example_sdl.cpp file:
 
     SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
 
-declares a technically unsafe raw pointer variable that would by default get converted to a safe pointer type. But the the SDL interface necessitates the use of this (unsafe) raw pointer, so we'll add a "[check suppression](https://github.com/duneroadrunner/scpptool#local-suppression-of-the-checks)" prefix like so:
+declares a technically unsafe raw pointer variable that would by default get converted to a safe pointer type. But the SDL interface necessitates the use of this (unsafe) raw pointer, so we'll add a "[check suppression](https://github.com/duneroadrunner/scpptool#local-suppression-of-the-checks)" prefix like so:
 
     MSE_LH_SUPPRESS_CHECK_IN_XSCOPE SDL_Surface* scr = SDL_SetVideoMode(w / jump, h / jump, 32, SDL_HWSURFACE);
 
 This will prevent the raw pointer declaration from being modified during the conversion process. It will also direct scpptool not to complain about the code being unsafe when used in its (default) static safety verification mode. The check suppression directive is an element provided by the SaferCPlusPlus library, so any file that uses it needs to include the necessary header file. So we add an include directive:
 
-    #include "msetl.h"
+    #include "mselegacyhelpers.h"
 
-at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the converted file. Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
+at the top of the file. There are a few other places in that file that also need check suppression annotations. You can see them all by looking for the check supression directives in the [converted file](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/master/examples/lodepng/lodepng_translated/src/examples/example_sdl.cpp). Missing any required annotations will result in compile errors in the converted code. But you can just add the missing annotations then.
 
 So it turns out that example_sdl.cpp is the only file in our example needing such annotations. Next its time to do the conversion. Before executing a conversion we always make a(nother) backup copy of the source files in case we need to tweak the files and repeat the conversion (which is likely). The format of the conversion command is 
 
@@ -40,7 +38,7 @@ So, from the source directory of the new copy of the project, we first convert t
 
     {scpptool_executable_directory}/scpptool -ConvertToSCPP -ScopeTypePointerFunctionParameters lodepng.cpp example_sdl.cpp -- --I.. -lSDL -std=c++17 -I'{the llvm8 directory}/lib/clang/8.0.0/include'
 
-This command will spew a whole bunch of stuff to the screen, including what may look like error messages. This is just the output of a "static analysis" pass that is executed as part of the conversion process. At the end you may get a message that says "merge: warning: conflicts during merge". While this indicates the possibility of an invalid conversion, its not abnormal and by default the conversion tool attempts to resolve "its merge conflicts" automatically (with a heuristic). (Though specifying a better system merge tool would theoretically improve the reliability of the results.)
+This command will spew a whole bunch of stuff to the screen, including what may look like error messages. This is just the output of a "static analysis" pass that is executed as part of the conversion process. At the end you may get a message that says "merge: warning: conflicts during merge". While this indicates the possibility of an invalid conversion, its not abnormal and by default the conversion tool attempts to resolve "its merge conflicts" automatically (with a heuristic).
 
 So this conversion command results in three files being modified - lodepng.cpp, example_sdl.cpp and the header file they include, lodepng.h. The converted files now require two additional compiler options to build: "-DMSE_SCOPEPOINTER_DISABLED" and "-DMSE_CHAR_STAR_EXEMPTED". "-DMSE_SCOPEPOINTER_DISABLED" directs the SaferCPlusPlus library to just use raw pointers as scope pointers. This may make it easier to interface the converted code with other (possibly unsafe) code not using the SaferCPlusPlus library. At the time of writing, the converter does not convert `char*`s as they are assumed to be null-terminated strings and safe, compatible counterparts for the C standard library string functions have not been implemented yet. "-DMSE_CHAR_STAR_EXEMPTED" directs the SaferCPlusPlus library to tolerate `char*`s even in situations where they aren't verified to be safe.
 
