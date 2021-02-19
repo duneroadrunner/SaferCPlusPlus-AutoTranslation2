@@ -70,7 +70,7 @@ The other uses of `void*` are similar. The another thing not addressed by the co
       ((uivector*)p)->size = ((uivector*)p)->allocsize = 0;
 ```
 
-contains hard casts of pointer paramter `p`. It turns out that this is just because `p` was originally declared as a `void*`. But we just changed that, so this hard cast is now redundant, so we can just get rid of it and the other similar ones.
+contains hard casts of pointer parameter `p`. It turns out that this is just because `p` was originally declared as a `void*`. But we just changed that, so this hard cast is now redundant, so we can just get rid of it and the other similar ones.
 
 So now (after, as always, making a(nother) backup) we can execute the conversion and try to compile again. But we still get one last compile error. A "no matching function for call" error that occurs around lines 112 and 113 of the converted example_sdl.cpp:
 
