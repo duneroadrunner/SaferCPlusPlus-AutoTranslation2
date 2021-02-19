@@ -42,7 +42,7 @@ So it turns out that example_sdl.cpp is the only file in our example needing suc
 
 So, from the source directory of the new copy of the project, we first convert the "SDL" example with a command like 
 
-    {scpptool_executable_directory}/scpptool -ConvertToSCPP -ScopeTypePointerFunctionParameters lodepng.cpp example_sdl.cpp -- --I.. -lSDL -std=c++17 -I'{the llvm8 directory}/lib/clang/8.0.0/include'
+    {scpptool_executable_directory}/scpptool -ConvertToSCPP -ScopeTypePointerFunctionParameters lodepng.cpp example_sdl.cpp -- -I.. -lSDL -std=c++17 -I'{the llvm8 directory}/lib/clang/8.0.0/include'
 
 This command will spew a whole bunch of stuff to the screen, including what may look like error messages. This is just the output of a "static analysis" pass that is executed as part of the conversion process. At the end you may get a message that says "merge: warning: conflicts during merge". While this indicates the possibility of an invalid conversion, its not abnormal and by default the conversion tool attempts to resolve "its merge conflicts" automatically (with a heuristic).
 
