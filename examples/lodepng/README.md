@@ -64,7 +64,7 @@ uses `void*` as the parameter type. Fortunately in this case the type doesn't ac
     static void uivector_cleanup(uivector* p)
 ```
 
-The other uses of `void*` are similar. The another thing not addressed by the converter is certain "hard" casts. Line 146 of the lodepng.cpp file:
+The other uses of `void*` are similar. Another thing not addressed by the converter is certain "hard" casts. Line 146 of the lodepng.cpp file:
 
 ```cpp
       ((uivector*)p)->size = ((uivector*)p)->allocsize = 0;
