@@ -117,7 +117,9 @@ void msetl_example2() {
 		/*   mtnii_vector<>   */
 		/**********************/
 
-		/* mtnii_vector<> is a safe vector that is eligible to be (safely) shared between asynchronous threads. */
+		/* mtnii_vector<> is a safe vector that is eligible to be (safely) shared between asynchronous threads. Note that
+		fixed-size vectors (like xscope_borrowing_fixed_nii_vector<>) are also eligible to be shared between asynchronous
+		threads and are generally preferred when suitable. */
 
 		typedef mse::mtnii_vector<mse::nii_string> mtnii_vector1_t;
 
@@ -205,10 +207,9 @@ void msetl_example2() {
 		/*   stnii_vector<>   */
 		/**********************/
 
-		/* Deprecated? Prefer nii_vector<> and xscope_borrowing_fixed_nii_vector<> instead. */
-
-		/* stnii_vector<> is just a version of mtnii_vector<> that is not eligible to be shared between threads (and has
-		a little less overhead as a result). */
+		/* stnii_vector<> is just a version of mtnii_vector<> that is not eligible to be shared between threads (and has a
+		little less overhead as a result). Though when suitable, using nii_vector<> and xscope_borrowing_fixed_nii_vector<>
+		is generally preferred. */
 
 		mse::TXScopeObj<mse::stnii_vector<int> > vector1_xscpobj = mse::stnii_vector<int>{ 1, 2, 3 };
 
@@ -337,7 +338,9 @@ void msetl_example2() {
 				auto xs_cptr1 = mse::xscope_const_pointer(xs_citer1);
 				auto val1 = *xs_cptr1;
 			}
-			mse::make_xscope_access_controlled_pointer(xs_ew_niivec1)->push_back(4);
+			/* Once the "access controlled const pointer" no longer exists, we can modify the vector again (via "access controlled 
+			(non-const) pointer") */
+			mse::push_back(mse::make_xscope_access_controlled_pointer(xs_ew_niivec1), 4);
 		}
 	}
 
@@ -439,8 +442,8 @@ void msetl_example2() {
 		mse::insert(&xs_nii_vector1_xscpobj, 0/*position index*/, { 6, 7, 8 }/*value*/);
 		mse::emplace(&xs_nii_vector1_xscpobj, 2/*position index*/, 9/*value*/);
 
-		const auto nii_vector1_expected = mse::nii_vector<int>{ 6, 7, 9, 8, 1, 5, 2, 4 };
-		assert(nii_vector1_expected == xs_nii_vector1_xscpobj);
+		const auto fnii_vector1_expected = mse::fixed_nii_vector<int>{ 6, 7, 9, 8, 1, 5, 2, 4 };
+		assert(fnii_vector1_expected == mse::make_xscope_borrowing_fixed_nii_vector(&xs_nii_vector1_xscpobj));
 
 		/* Constructing a xscope_borrowing_fixed_nii_vector<> requires a (non-const) scope pointer to an eligible vector. */
 		auto xs_bf_nii_vector1_xscpobj = mse::make_xscope(mse::make_xscope_borrowing_fixed_nii_vector(&xs_nii_vector1_xscpobj));
@@ -455,6 +458,7 @@ void msetl_example2() {
 			/* Here we're obtaining a scope pointer from a scope iterator. */
 			auto xscp_ptr1 = mse::xscope_pointer(xscp_iter1);
 			auto res3 = *xscp_ptr1;
+			*xscp_ptr1 = 7;
 
 			auto xscp_citer3 = mse::make_xscope_begin_const_iterator(&xs_bf_nii_vector1_xscpobj);
 			xscp_citer3 = xscp_iter1;
@@ -855,48 +859,58 @@ void msetl_example2() {
 		/****************/
 
 		{
-			/* mstd::optional<> is essentially just a safe implementation of std::optional<>. But you may, on occasion, also
-			need a (safe) pointer that directly targets the contained element. You could make the element type a "registered"
-			or "norad" object. Alternatively, you can obtain a safe pointer to the contained element from a pointer to the
-			optional<> object like so: */
-			auto opt1_refcptr = mse::make_refcounting<mse::mstd::optional<mse::mstd::string> >("abc");
-			auto elem_ptr1 = mse::make_optional_element_pointer(opt1_refcptr);
-			auto val1 = *elem_ptr1;
+			/* mstd::optional<> is essentially just a safe implementation of std::optional<>. */
+			auto opt1 = mse::mstd::optional<int>{ 7 };
+			assert(opt1.has_value());
+			auto val1 = opt1.value();
 		}
 #ifndef EXCLUDE_DUE_TO_MSVC2019_INTELLISENSE_BUGS1
 		{
-			/* More commonly, the optional<> object might be declared as a scope object. */
-			auto xs_opt1 = mse::make_xscope(mse::mstd::make_optional(mse::mstd::string("abc")));
+			/* You might think of optional<> as a dynamic container like a vector<> that supports a maximum of one element.
+			So like vectors, directly accessing or referencing the contents of an optional<> is discouraged. Instead
+			prefer to access the contents via an xscope_borrowing_fixed_optional<>, which is a "non-dynamic" type (i.e. its
+			element, if present, can be modified, but elements cannot be added or removed), that will "borrow" the contents
+			of the "dynamic" optional<>. */
+
+			auto xs_opt1 = mse::make_xscope(mse::make_optional(mse::mstd::string("abc")));
 			// which can also be written as
-			// auto xs_opt1 = mse::TXScopeObj<mse::mstd::optional<mse::mstd::string> >("abc");
+			// auto xs_opt1 = mse::TXScopeObj<mse::optional<mse::mstd::string> >("abc");
 
-			auto xs_elem_ptr1 = mse::make_xscope_optional_element_pointer(&xs_opt1);
+			xs_opt1 = {};
+			xs_opt1 = mse::mstd::string("def");
 
-			/* Note that the scope version of the "optional element pointer", like scope vector iterators, has the side-effect,
-			while it exists, of "locking" the optional<> (scope) object so as to prevent any operation that might destroy the
-			contained element. This property allows us to obtain a "regular" scope pointer to the element from the scope
-			"optional element pointer". */
+			{
+				/* Here we obtain an xscope_borrowing_fixed_optional<> that "borrows" the contents of xs_opt1. */
+				auto xs_bfopt1 = mse::make_xscope_borrowing_fixed_optional(&xs_opt1);
 
-			auto xs_ptr1 = mse::xscope_pointer(xs_elem_ptr1);
-			auto val1 = *xs_ptr1;
+				/* Note that accessing xs_opt1 is prohibited while xs_bfopt1 exists. This restriction is enforced.*/
+
+				/* Here we obtain a (safe) pointer to the contained element. */
+				auto xs_elem_ptr1 = mse::make_xscope_fixed_optional_element_pointer(&xs_bfopt1);
+
+				/* We can also then obtain a scope pointer to the contained element. */
+				auto xs_ptr1 = mse::xscope_pointer(xs_elem_ptr1);
+				auto val1 = *xs_ptr1;
+				*xs_ptr1 = mse::mstd::string("ghi");
+			}
+			/* After the xscope_borrowing_fixed_optional<> is gone, we can again access our optional<>. */
+			xs_opt1.reset();
 		}
 #endif // !EXCLUDE_DUE_TO_MSVC2019_INTELLISENSE_BUGS1
 		{
-			/* The reason is subtle, but the implementation mstd::optional<> uses to support the ability to obtain a scope
-			(const) pointer to its contained element from a const reference to the mstd::optional<> makes it ineligible to be
-			shared among threads. Analogous to mtnii_vector<>, mt_optional<> is a version that is eligible to be shared among
-			threads, at a cost of slightly higher run-time overhead. */
+			/* Analogous to mtnii_vector<>, mt_optional<> is a version that is eligible to be shared among threads, at a
+			cost of slightly higher run-time overhead. When suitable, using optional<> and xscope_borrowing_optional<> is
+			generally preferred. */
 			auto opt1_access_requester = mse::make_asyncsharedv2readwrite<mse::mt_optional<mse::nii_string> >("abc");
 			auto elem_ptr1 = mse::make_optional_element_pointer(opt1_access_requester.writelock_ptr());
 			auto val1 = *elem_ptr1;
 		}
 #ifndef EXCLUDE_DUE_TO_MSVC2019_INTELLISENSE_BUGS1
 		{
-			/* mstd::optional<> and mt_optional<> can, like any other type, be declared as a scope type (using
-			mse::make_xscope() / mse::TXScopeObj<>). But they do not support using scope types as their contained element
-			type. It is (intended to be) uncommon to need such capability. But the library does provide a couple of
-			versions that support it. xscope_mt_optional<> is eligible to be shared among (scope) threads, while
-			xscope_st_optional<> is not. */
+			/* optional<>s can, like any other type, be declared as a scope type (using mse::make_xscope() / mse::TXScopeObj<>).
+			But they do not support using scope types as their contained element type. It is (intended to be) uncommon to need
+			such capability. But the library does provide a couple of versions that support it. xscope_mt_optional<> is eligible
+			to be shared among (scope) threads, while xscope_st_optional<> is not. */
 
 			/* Here we're creating a (string) object of scope type. */
 			auto xs_str1 = mse::make_xscope(mse::mstd::string("abc"));
@@ -1109,8 +1123,8 @@ void msetl_example2() {
 			functions expecting scope random access section arguments. */
 			class CD {
 			public:
-				typedef decltype(mse::make_xscope_random_access_const_section(mse::pointer_to(mse::TXScopeObj<mse::mtnii_vector<int> >
-					(mse::mtnii_vector<int>{ 1, 2, 3})))) xscope_ra_csection_t;
+				typedef decltype(mse::make_xscope_random_access_const_section(mse::pointer_to(mse::TXScopeObj<mse::nii_vector<int> >
+					(mse::nii_vector<int>{ 1, 2, 3})))) xscope_ra_csection_t;
 				static bool second_is_longer(mse::rsv::TXScopeFParam<xscope_ra_csection_t> xscope_ra_csection1
 					, mse::rsv::TXScopeFParam<xscope_ra_csection_t> xscope_ra_csection2) {
 
@@ -1123,14 +1137,14 @@ void msetl_example2() {
 				}
 			};
 
-			mse::TXScopeObj<mse::mtnii_vector<int> > vector1(mse::mtnii_vector<int>{ 1, 2, 3});
+			mse::TXScopeObj<mse::nii_vector<int> > vector1(mse::nii_vector<int>{ 1, 2, 3});
 			auto xscope_ra_csection1 = mse::make_xscope_random_access_const_section(&vector1);
 			auto res1 = CD::second_is_longer(xscope_ra_csection1, mse::make_xscope_random_access_const_section(
-				mse::pointer_to(mse::TXScopeObj<mse::mtnii_vector<int> >(mse::mtnii_vector<int>{ 1, 2, 3, 4}))));
+				mse::pointer_to(mse::TXScopeObj<mse::nii_vector<int> >(mse::nii_vector<int>{ 1, 2, 3, 4}))));
 			auto res2 = J::second_is_longer(xscope_ra_csection1, mse::make_xscope_random_access_const_section(
-				mse::pointer_to(mse::TXScopeObj<mse::mtnii_vector<int> >(mse::mtnii_vector<int>{ 1, 2, 3, 4}))));
+				mse::pointer_to(mse::TXScopeObj<mse::nii_vector<int> >(mse::nii_vector<int>{ 1, 2, 3, 4}))));
 			auto res3 = CD::second_is_longer_any(xscope_ra_csection1, mse::make_xscope_random_access_const_section(
-				mse::pointer_to(mse::TXScopeObj<mse::mtnii_vector<int> >(mse::mtnii_vector<int>{ 1, 2, 3, 4}))));
+				mse::pointer_to(mse::TXScopeObj<mse::nii_vector<int> >(mse::nii_vector<int>{ 1, 2, 3, 4}))));
 		}
 #endif // !EXCLUDE_DUE_TO_MSVC2019_INTELLISENSE_BUGS1
 	}
@@ -1639,17 +1653,15 @@ void msetl_example2() {
 		/* algorithms */
 
 		mse::TXScopeObj<mse::nii_array<int, 3> > xscope_na1 = mse::nii_array<int, 3>{ 1, 2, 3 };
-		mse::TXScopeObj<mse::nii_array<int, 3> > xscope_na2 = mse::nii_array<int, 3>{ 1, 2, 3 };
 		auto xscope_na1_begin_citer = mse::make_xscope_begin_const_iterator(&xscope_na1);
 		auto xscope_na1_end_citer = mse::make_xscope_end_const_iterator(&xscope_na1);
-		auto xscope_na2_begin_iter = mse::make_xscope_begin_iterator(&xscope_na2);
-		auto xscope_na2_end_iter = mse::make_xscope_end_iterator(&xscope_na2);
 
 		mse::mstd::array<int, 3> ma1{ 1, 2, 3 };
 
-		mse::TXScopeObj<mse::mtnii_vector<int> > xscope_nv1 = mse::mtnii_vector<int>{ 1, 2, 3 };
-		auto xscope_nv1_begin_iter = mse::make_xscope_begin_iterator(&xscope_nv1);
-		auto xscope_nv1_end_iter = mse::make_xscope_end_iterator(&xscope_nv1);
+		auto xscope_nv1 = mse::make_xscope(mse::nii_vector<int>{ 1, 2, 3 });
+
+		/* Here we declare a vector protected by an "excluse writer" access control wrapper. */
+		auto xscope_ewnv1 = mse::make_xscope(mse::make_xscope_exclusive_writer(mse::nii_vector<int>{ 1, 2, 3 }));
 
 		{
 			/* for_each_ptr() */
@@ -1667,10 +1679,25 @@ void msetl_example2() {
 			typedef mse::xscope_range_for_each_ptr_type<decltype(&xscope_na1)> range_item_ptr_t;
 			mse::xscope_range_for_each_ptr(&xscope_na1, [](range_item_ptr_t x_ptr) { std::cout << *x_ptr << std::endl; });
 
-			/* Note that for performance (and safety) reasons, vectors may be "structure locked" for the duration of the loop.
-			That is, any attempt to modify the size of the vector during the loop may result in an exception. */
-			mse::for_each_ptr(xscope_nv1_begin_iter, xscope_nv1_end_iter, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
-			mse::xscope_range_for_each_ptr(&xscope_nv1, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
+			{
+				auto xscope_bfnv1 = mse::make_xscope(mse::make_xscope_borrowing_fixed_nii_vector(&xscope_nv1));
+				mse::xscope_range_for_each_ptr(&xscope_bfnv1, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
+			}
+			{
+				/* Note that for performance (and safety) reasons, vectors may be "structure locked" for the duration of the loop.
+				That is, any attempt to modify the size of the vector during the loop may result in an exception. */
+				auto xscope_nv1_begin_iter = mse::make_xscope_begin_iterator(&xscope_nv1);
+				auto xscope_nv1_end_iter = mse::make_xscope_end_iterator(&xscope_nv1);
+				mse::for_each_ptr(xscope_nv1_begin_iter, xscope_nv1_end_iter, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
+				mse::xscope_range_for_each_ptr(&xscope_nv1, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
+			}
+			{
+				/* A vector protected by an "excluse writer" access control wrapper is ensured to remain unmodified while a
+				corresponding "access controlled const pointer" exists. */
+				auto xscope_ewnv1_cptr = mse::make_xscope_access_controlled_const_pointer(&xscope_ewnv1);
+				/* So looping over its elements is safe and efficient. */
+				mse::xscope_range_for_each_ptr(xscope_ewnv1_cptr, [](const auto x_ptr) { std::cout << *x_ptr << std::endl; });
+			}
 		}
 		{
 			/* find_if_ptr() */
@@ -1848,6 +1875,7 @@ void msetl_example2() {
 			int res1 = function1();
 		}
 		{
+#ifndef __apple_build_version__
 			/* xscope_function<>s support scope function objects as well. */
 			mse::xscope_function<int()> xs_function1 = []() { return 5; };
 
@@ -1868,6 +1896,7 @@ void msetl_example2() {
 			capture scope pointer/references must be declared as such. */
 			auto xs_lambda1 = mse::rsv::make_xscope_reference_or_pointer_capture_lambda([int1_xsptr]() { return *int1_xsptr; });
 			mse::xscope_function<int()> xs_function3 = xs_lambda1;
+#endif // !__apple_build_version__
 		}
 
 		mse::self_test::CFunctionTest1::s_test1();
@@ -1877,6 +1906,9 @@ void msetl_example2() {
 		/********************/
 		/*  legacy helpers  */
 		/********************/
+
+		/* Safe elements and macros that can, as much as possible, act as one-to-one compatible replacements for (unsafe)
+		legacy C language elements. */
 
 		{
 			MSE_LH_DYNAMIC_ARRAY_ITERATOR_TYPE(int) iptrwbv1 = MSE_LH_ALLOC_DYN_ARRAY1(MSE_LH_DYNAMIC_ARRAY_ITERATOR_TYPE(int), 2 * sizeof(int));
@@ -1964,6 +1996,26 @@ void msetl_example2() {
 			MSE_LH_MEMSET(array1, 99, 3/*elements*/ * sizeof(arr_element_type));
 			MSE_LH_MEMCPY(array2, array1, 3/*elements*/ * sizeof(arr_element_type));
 			auto res18 = array2[1];
+		}
+
+		{
+			struct CB {
+				static std::string foo1(int x, int y) {
+					return std::to_string(x + y);
+				}
+			};
+
+			MSE_LH_FUNCTION_POINTER_DECLARATION(std::string, (int x, int y), func_ptr1) = &CB::foo1;
+			func_ptr1 = &CB::foo1;
+			auto res_str1 = func_ptr1(3, 5);
+			auto res_str1b = (*func_ptr1)(3, 5);
+
+			std::string (*func_ptr2)(int x, int y) = &CB::foo1;
+			func_ptr2 = &CB::foo1;
+			auto res_str2 = func_ptr2(3, 5);
+			auto res_str2b = (*func_ptr2)(3, 5);
+
+			func_ptr1 = func_ptr2;
 		}
 	}
 }

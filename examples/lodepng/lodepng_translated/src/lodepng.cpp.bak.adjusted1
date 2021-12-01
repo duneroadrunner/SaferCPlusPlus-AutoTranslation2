@@ -154,11 +154,11 @@ static unsigned uivector_reserve(uivector* p, size_t allocsize)
   if(allocsize > p->allocsize)
   {
     size_t newsize = (allocsize > p->allocsize * 2) ? allocsize : (allocsize * 3 / 2);
-    void* data = lodepng_realloc(p->data, newsize);
+    unsigned* data = (unsigned*)lodepng_realloc(p->data, newsize);
     if(data)
     {
       p->allocsize = newsize;
-      p->data = (unsigned*)data;
+      p->data = /*(unsigned*)*/data;
     }
     else return 0; /*error: not enough memory*/
   }
@@ -215,11 +215,11 @@ static unsigned ucvector_reserve(ucvector* p, size_t allocsize)
   if(allocsize > p->allocsize)
   {
     size_t newsize = (allocsize > p->allocsize * 2) ? allocsize : (allocsize * 3 / 2);
-    void* data = lodepng_realloc(p->data, newsize);
+    unsigned char* data = (unsigned char*)lodepng_realloc(p->data, newsize);
     if(data)
     {
       p->allocsize = newsize;
-      p->data = (unsigned char*)data;
+      p->data = /*(unsigned char*)*/data;
     }
     else return 0; /*error: not enough memory*/
   }

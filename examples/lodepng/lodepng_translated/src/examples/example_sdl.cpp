@@ -40,7 +40,7 @@ Press any key to see next image, or esc to quit.
 #include <iostream>
 #include <SDL/SDL.h>
 
-int show(const std::string&  caption, mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  rgba, unsigned w, unsigned h)
+int show(const mse::mstd::string&  caption, mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  rgba, unsigned w, unsigned h)
 {
   //avoid too large window size by downscaling large image
   unsigned jump = 1;
@@ -59,7 +59,7 @@ int show(const std::string&  caption, mse::lh::TLHNullableAnyRandomAccessIterato
     std::cout << "error, no SDL screen" << std::endl;
     return 0;
   }
-  SDL_WM_SetCaption(caption.c_str(), nullptr); //set window caption
+  SDL_WM_SetCaption(mse::us::lh::make_raw_pointer_from(caption.c_str()), NULL); //set window caption
 
   //plot the pixels of the PNG file
   for(unsigned y = 0; y + jump - 1 < h; y += jump)
@@ -88,13 +88,13 @@ int show(const std::string&  caption, mse::lh::TLHNullableAnyRandomAccessIterato
   int done = 0;
   while(done == 0)
   {
-    while(SDL_PollEvent(&event))
+    while(SDL_PollEvent(mse::us::lh::make_raw_pointer_from(&event)))
     {
       if(event.type == SDL_QUIT) done = 2;
-      else if(SDL_GetKeyState(nullptr)[SDLK_ESCAPE]) done = 2;
+      else if(SDL_GetKeyState(NULL)[SDLK_ESCAPE]) done = 2;
       else if(event.type == SDL_KEYDOWN) done = 1; //press any other key for next image
     }
-    SDL_UpdateRect(scr, 0, 0, 0, 0); //redraw screen
+    SDL_UpdateRect(mse::us::lh::make_raw_pointer_from(scr), 0, 0, 0, 0); //redraw screen
     SDL_Delay(5); //pause 5 ms so it consumes less processing power
   }
 
@@ -103,23 +103,23 @@ int show(const std::string&  caption, mse::lh::TLHNullableAnyRandomAccessIterato
 }
 
 /*shows image with SDL. Returns 1 if user wants to fully quit, 0 if user wants to see next image.*/
-int showfile(const char*  filename)
+int showfile(mse::lh::TXScopeLHNullableAnyRandomAccessIterator<const char>  filename)
 {
-  std::cout << "showing " << filename << std::endl;
+  std::cout << "showing " << mse::us::lh::make_raw_pointer_from(filename) << std::endl;
 
   mse::mstd::vector<unsigned char> buffer; mse::mstd::vector<unsigned char> image;
   lodepng::load_file(buffer, filename); //load the image file with given filename
-  mse::TRegisteredObj<unsigned int > w = 0/*auto-generated init val*/; mse::TRegisteredObj<unsigned int > h = 0/*auto-generated init val*/;
+  mse::TRegisteredObj<unsigned int> w = 0/*auto-generated init val*/; mse::TRegisteredObj<unsigned int> h = 0/*auto-generated init val*/;
   unsigned error = lodepng::decode(image, w, h, buffer); //decode the png
 
   //stop if there is an error
   if(error)
   {
-    std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+    std::cout << "decoder error " << error << ": " << mse::us::lh::make_raw_pointer_from(lodepng_error_text(error)) << std::endl;
     return 0;
   }
 
-  return show(filename, (mse::make_nullable_any_random_access_iterator(std::begin(image)) + (0)), w, h);
+  return show(filename, mse::lh::address_of_array_element_replacement(image, 0), w, h);
 }
 
 int main(int argc, char* *  argv)

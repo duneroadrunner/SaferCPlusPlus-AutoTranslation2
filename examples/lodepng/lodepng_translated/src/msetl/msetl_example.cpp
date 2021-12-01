@@ -96,7 +96,7 @@ public:
 	return one of their function parameters, potentially of the scope reference variety which would otherwise be
 	rejected (with a compile error) as an unsafe return value. */
 	template<class _TString1Pointer, class _TString2Pointer>
-	static auto longest(const _TString1Pointer& string1_ptr, const _TString2Pointer& string2_ptr) {
+	static auto longest(const _TString1Pointer string1_ptr, const _TString2Pointer string2_ptr) {
 		auto l_string1_ptr = mse::rsv::as_a_returnable_fparam(string1_ptr);
 		auto l_string2_ptr = mse::rsv::as_a_returnable_fparam(string2_ptr);
 
@@ -117,7 +117,7 @@ public:
 	}
 	/* This function will be used to demonstrate nested function calls (safely) returning scope pointer/references. */
 	template<class _TString1Pointer, class _TString2Pointer>
-	static auto nested_longest(const _TString1Pointer& string1_ptr, const _TString2Pointer& string2_ptr) {
+	static auto nested_longest(const _TString1Pointer string1_ptr, const _TString2Pointer string2_ptr) {
 		auto l_string1_ptr = mse::rsv::as_a_returnable_fparam(string1_ptr);
 		auto l_string2_ptr = mse::rsv::as_a_returnable_fparam(string2_ptr);
 
@@ -142,7 +142,7 @@ public:
 	/* This function demonstrates scope reference objects inheriting the "returnability" trait from the reference objects
 	from which they were derived. */
 	template<class _TPointer1>
-	static auto xscope_string_const_section_to_member_of_CE(_TPointer1 CE_ptr) {
+	static auto xscope_string_const_section_to_member_of_CE(const _TPointer1 CE_ptr) {
 		auto returnable_CE_ptr = mse::rsv::as_a_returnable_fparam(CE_ptr);
 
 		/* "Pointers to members" based on returnable pointers inherit the "returnability". */
@@ -155,13 +155,13 @@ public:
 		return mse::return_value(returnable_string_const_section2);
 	}
 	template<class _TPointer1>
-	static auto nested_xscope_string_const_section_to_member_of_CE(_TPointer1 CE_ptr) {
+	static auto nested_xscope_string_const_section_to_member_of_CE(const _TPointer1& CE_ptr) {
 		auto returnable_CE_ptr = mse::rsv::as_a_returnable_fparam(CE_ptr);
 
 		return mse::return_value(xscope_string_const_section_to_member_of_CE(returnable_CE_ptr));
 	}
 
-	/* This function will be used to demonstrate using rsv::as_an_fparam() to enable template functions to accept scope 
+	/* This function will be used to demonstrate using rsv::as_an_fparam() to enable template functions to accept scope
 	pointers to temporary objects. */
 	template<class _TPointer1, class _TPointer2>
 	static bool second_is_longer(_TPointer1&& string1_xscpptr, _TPointer2&& string2_xscpptr) {
@@ -973,6 +973,7 @@ int main(int argc, char* argv[]) {
 		In most cases it is probably preferable to just use mse::TRegisteredFixedPointer instead of mse::TRegisteredRefWrapper. 
 		*/
 		{
+#ifndef __apple_build_version__
 			/* This example originally comes from http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper. */
 			std::list<mse::TRegisteredObj<mse::CInt>> l(10);
 			std::iota(l.begin(), l.end(), -4);
@@ -997,6 +998,8 @@ int main(int argc, char* argv[]) {
 			std::cout << "Contents of the list, as seen through a shuffled vector: ";
 			for (auto i : v) { std::cout << static_cast<mse::CInt&>(i) << ' '; } std::cout << '\n';
 			std::cout << '\n';
+#endif // !__apple_build_version__
+
 		}
 		{
 			/* This example originally comes from http://www.cplusplus.com/reference/functional/reference_wrapper/. */
@@ -1362,18 +1365,18 @@ with the library's (safe) optional<> types. The compiler has no problem with it,
 
 			class CD {
 			public:
-				static bool second_is_longer(mse::rsv::TXScopeFParam<mse::TXScopeFixedConstPointer<mse::nii_string> > string1_xscpptr
-					, mse::rsv::TXScopeFParam<mse::TXScopeFixedConstPointer<mse::nii_string> > string2_xscpptr) {
+				static bool second_is_longer(const mse::rsv::TXScopeFParam<mse::TXScopeFixedConstPointer<mse::nii_string> > string1_xscpptr
+					, const mse::rsv::TXScopeFParam<mse::TXScopeFixedConstPointer<mse::nii_string> > string2_xscpptr) {
 
 					return (string1_xscpptr->length() > string2_xscpptr->length()) ? false : true;
 				}
 
-				static bool second_is_longer_any(mse::rsv::TXScopeFParam<mse::TXScopeAnyConstPointer<mse::nii_string> > string1_xscpptr
-					, mse::rsv::TXScopeFParam<mse::TXScopeAnyConstPointer<mse::nii_string> > string2_xscpptr) {
+				static bool second_is_longer_any(const mse::rsv::TXScopeFParam<mse::TXScopeAnyConstPointer<mse::nii_string> > string1_xscpptr
+					, const mse::rsv::TXScopeFParam<mse::TXScopeAnyConstPointer<mse::nii_string> > string2_xscpptr) {
 					return (string1_xscpptr->length() > string2_xscpptr->length()) ? false : true;
 				}
 
-				static bool second_is_longer_poly(mse::rsv::TXScopeFParam<mse::TXScopePolyConstPointer<mse::nii_string> > string1_xscpptr
+				static bool second_is_longer_poly(const mse::rsv::TXScopeFParam<mse::TXScopePolyConstPointer<mse::nii_string> > string1_xscpptr
 					, mse::rsv::TXScopeFParam<mse::TXScopePolyConstPointer<mse::nii_string> > string2_xscpptr) {
 					return (string1_xscpptr->length() > string2_xscpptr->length()) ? false : true;
 				}

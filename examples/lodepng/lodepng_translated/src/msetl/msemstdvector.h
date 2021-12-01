@@ -190,7 +190,7 @@ namespace mse {
 			MSE_USING_AND_DEFAULT_COPY_AND_MOVE_CONSTRUCTOR_DECLARATIONS(Tvector_xscope_const_iterator, base_class);
 
 			MSE_USING_ASSIGNMENT_OPERATOR(base_class);
-			auto& operator=(Tvector_xscope_const_iterator&& _X) & { base_class::operator=(std::forward<decltype(_X)>(_X)); return (*this); }
+			auto& operator=(Tvector_xscope_const_iterator&& _X) & { base_class::operator=(MSE_FWD(_X)); return (*this); }
 			auto& operator=(const Tvector_xscope_const_iterator& _X) & { base_class::operator=(_X); return (*this); }
 
 			Tvector_xscope_const_iterator& operator ++() & { base_class::operator ++(); return (*this); }
@@ -205,7 +205,7 @@ namespace mse {
 			difference_type operator-(const Tvector_xscope_const_iterator& _Right_cref) const { return base_class::operator-(_Right_cref); }
 			const_reference operator*() const { return base_class::operator*(); }
 
-			Tvector_xscope_const_iterator operator=(Tvector_xscope_const_iterator&& _X) && { base_class::operator=(std::forward<decltype(_X)>(_X)); return std::move(*this); }
+			Tvector_xscope_const_iterator operator=(Tvector_xscope_const_iterator&& _X) && { base_class::operator=(MSE_FWD(_X)); return std::move(*this); }
 			Tvector_xscope_const_iterator operator=(const Tvector_xscope_const_iterator& _X) && { base_class::operator=(_X); return std::move(*this); }
 			Tvector_xscope_const_iterator operator ++() && { base_class::operator ++(); return std::move(*this); }
 			Tvector_xscope_const_iterator operator --() && { base_class::operator --(); return std::move(*this); }
@@ -235,7 +235,7 @@ namespace mse {
 			MSE_USING_AND_DEFAULT_COPY_AND_MOVE_CONSTRUCTOR_DECLARATIONS(Tvector_xscope_iterator, base_class);
 
 			MSE_USING_ASSIGNMENT_OPERATOR(base_class);
-			auto& operator=(Tvector_xscope_iterator&& _X) & { base_class::operator=(std::forward<decltype(_X)>(_X)); return (*this); }
+			auto& operator=(Tvector_xscope_iterator&& _X) & { base_class::operator=(MSE_FWD(_X)); return (*this); }
 			auto& operator=(const Tvector_xscope_iterator& _X) & { base_class::operator=(_X); return (*this); }
 
 			Tvector_xscope_iterator& operator ++() & { base_class::operator ++(); return (*this); }
@@ -249,7 +249,7 @@ namespace mse {
 			Tvector_xscope_iterator operator-(difference_type n) const { return ((*this) + (-n)); }
 			difference_type operator-(const Tvector_xscope_iterator& _Right_cref) const { return base_class::operator-(_Right_cref); }
 
-			Tvector_xscope_iterator operator=(Tvector_xscope_iterator&& _X) && { base_class::operator=(std::forward<decltype(_X)>(_X)); return std::move(*this); }
+			Tvector_xscope_iterator operator=(Tvector_xscope_iterator&& _X) && { base_class::operator=(MSE_FWD(_X)); return std::move(*this); }
 			Tvector_xscope_iterator operator=(const Tvector_xscope_iterator _X) && { base_class::operator=(_X); return std::move(*this); }
 			Tvector_xscope_iterator operator ++() && { base_class::operator ++(); return std::move(*this); }
 			Tvector_xscope_iterator operator --() && { base_class::operator --(); return std::move(*this); }
@@ -290,23 +290,23 @@ namespace mse {
 				msevector() = std::move(_X.msevector());
 			}
 			vector(const _Myt& _X) : m_shptr(std::make_shared<_MV>(_X.msevector())) {}
-			vector(_MV&& _X) : m_shptr(std::make_shared<_MV>(std::forward<decltype(_X)>(_X))) {}
+			vector(_MV&& _X) : m_shptr(std::make_shared<_MV>(MSE_FWD(_X))) {}
 			vector(const _MV& _X) : m_shptr(std::make_shared<_MV>(_X)) {}
-			vector(std::vector<_Ty>&& _X) : m_shptr(std::make_shared<_MV>(std::forward<decltype(_X)>(_X))) {}
+			vector(std::vector<_Ty>&& _X) : m_shptr(std::make_shared<_MV>(MSE_FWD(_X))) {}
 			vector(const std::vector<_Ty>& _X) : m_shptr(std::make_shared<_MV>(_X)) {}
 			typedef typename _MV::const_iterator _It;
 			vector(_It _F, _It _L, const _A& _Al = _A()) : m_shptr(std::make_shared<_MV>(_F, _L, _Al)) {}
 			vector(const _Ty* _F, const _Ty* _L, const _A& _Al = _A()) : m_shptr(std::make_shared<_MV>(_F, _L, _Al)) {}
-			template<class _Iter, class = typename std::enable_if<mse::impl::_mse_Is_iterator<_Iter>::value, void>::type>
+			template<class _Iter, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::_mse_Is_iterator<_Iter>::value> MSE_IMPL_EIS >
 			vector(_Iter _First, _Iter _Last) : m_shptr(std::make_shared<_MV>(_First, _Last)) {}
-			template<class _Iter, class = typename std::enable_if<mse::impl::_mse_Is_iterator<_Iter>::value, void>::type>
+			template<class _Iter, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::_mse_Is_iterator<_Iter>::value> MSE_IMPL_EIS >
 			vector(_Iter _First, _Iter _Last, const _A& _Al) : m_shptr(std::make_shared<_MV>(_First, _Last, _Al)) {}
 
 			MSE_IMPL_DESTRUCTOR_PREFIX1 ~vector() {
 				msevector().note_parent_destruction();
 			}
 
-			//_Myt& operator=(_MV&& _X) { msevector() = (std::forward<decltype(_X)>(_X)); return (*this); }
+			//_Myt& operator=(_MV&& _X) { msevector() = (MSE_FWD(_X)); return (*this); }
 			//_Myt& operator=(const _MV& _X) { msevector() = (_X); return (*this); }
 			_Myt& operator=(_Myt&& _X) {
 				static_assert(typename std::is_rvalue_reference<decltype(_X)>::type(), "");
@@ -320,7 +320,7 @@ namespace mse {
 			void resize(size_type _N, const _Ty& _X = _Ty()) { m_shptr->resize(_N, _X); }
 			typename _MV::const_reference operator[](size_type _P) const { return m_shptr->operator[](_P); }
 			typename _MV::reference operator[](size_type _P) { return m_shptr->operator[](_P); }
-			void push_back(_Ty&& _X) { m_shptr->push_back(std::forward<decltype(_X)>(_X)); }
+			void push_back(_Ty&& _X) { m_shptr->push_back(MSE_FWD(_X)); }
 			void push_back(const _Ty& _X) { m_shptr->push_back(_X); }
 			void pop_back() { m_shptr->pop_back(); }
 			void assign(_It _F, _It _L) { m_shptr->assign(_F, _L); }
@@ -331,8 +331,8 @@ namespace mse {
 			void swap(_MV& _X) { m_shptr->swap(_X); }
 			void swap(_Myt& _X) { m_shptr->swap(_X.msevector()); }
 			void swap(std::vector<_Ty, _A>& _X) { m_shptr->swap(_X); }
-			template<typename _TStateMutex2, template<typename> class _TTXScopeConstIterator2>
-			void swap(mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex2, _TTXScopeConstIterator2>& _X) { m_shptr->swap(_X); }
+			template<typename _TStateMutex2, template<typename> class _TTXScopeConstIterator, class TConstLockableIndicator2>
+			void swap(mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex2, _TTXScopeConstIterator, TConstLockableIndicator2>& _X) { m_shptr->swap(_X); }
 
 			vector(_XSTD initializer_list<typename _MV::value_type> _Ilist, const _A& _Al = _A()) : m_shptr(std::make_shared<_MV>(_Ilist, _Al)) {}
 			_Myt& operator=(_XSTD initializer_list<typename _MV::value_type> _Ilist) { msevector() = (_Ilist); return (*this); }
@@ -411,7 +411,11 @@ namespace mse {
 					(*m_msevector_cshptr).assert_parent_not_destroyed();
 					return msevector_ss_const_iterator_type().operator->();
 				}
-				typename _MV::const_reference operator[](typename _MV::difference_type _Off) const { return (*(*this + _Off)); }
+				typename _MV::const_reference operator[](typename _MV::difference_type _Off) const {
+					(*m_msevector_cshptr).assert_parent_not_destroyed();
+					return msevector_ss_const_iterator_type().operator[](_Off);
+					//return (*(*this + _Off));
+				}
 				bool operator==(const const_iterator& _Right_cref) const { return msevector_ss_const_iterator_type().operator==(_Right_cref.msevector_ss_const_iterator_type()); }
 				bool operator!=(const const_iterator& _Right_cref) const { return (!(_Right_cref == (*this))); }
 				bool operator<(const const_iterator& _Right) const { return (msevector_ss_const_iterator_type() < _Right.msevector_ss_const_iterator_type()); }
@@ -459,6 +463,22 @@ namespace mse {
 					return retval;
 				}
 
+				typename _MV::reference operator*() const {
+					(*m_msevector_shptr).assert_parent_not_destroyed();
+					return msevector_ss_iterator_type().operator*();
+				}
+				typename _MV::reference item() const { return operator*(); }
+				typename _MV::reference previous_item() const { return msevector_ss_iterator_type().previous_item(); }
+				typename _MV::pointer operator->() const {
+					(*m_msevector_shptr).assert_parent_not_destroyed();
+					return msevector_ss_iterator_type().operator->();
+				}
+				typename _MV::reference operator[](typename _MV::difference_type _Off) const {
+					(*m_msevector_shptr).assert_parent_not_destroyed();
+					return msevector_ss_iterator_type().operator[](_Off);
+					//return (*(*this + _Off));
+				}
+
 				void reset() { msevector_ss_iterator_type().reset(); }
 				bool points_to_an_item() const { return msevector_ss_iterator_type().points_to_an_item(); }
 				bool points_to_end_marker() const { return msevector_ss_iterator_type().points_to_end_marker(); }
@@ -482,24 +502,16 @@ namespace mse {
 				iterator& operator -=(difference_type n) { msevector_ss_iterator_type().operator -=(n); return (*this); }
 				iterator operator+(difference_type n) const { auto retval = (*this); retval += n; return retval; }
 				iterator operator-(difference_type n) const { return ((*this) + (-n)); }
-				typename _MV::difference_type operator-(const iterator& _Right_cref) const { return msevector_ss_iterator_type() - (_Right_cref.msevector_ss_iterator_type()); }
-				typename _MV::reference operator*() const {
-					(*m_msevector_shptr).assert_parent_not_destroyed();
-					return msevector_ss_iterator_type().operator*();
+				typename _MV::difference_type operator-(const const_iterator& _Right_cref) const {
+					return (const_iterator(*this) - _Right_cref);
 				}
-				typename _MV::reference item() const { return operator*(); }
-				typename _MV::reference previous_item() const { return msevector_ss_iterator_type().previous_item(); }
-				typename _MV::pointer operator->() const {
-					(*m_msevector_shptr).assert_parent_not_destroyed();
-					return msevector_ss_iterator_type().operator->();
-				}
-				typename _MV::reference operator[](typename _MV::difference_type _Off) const { return (*(*this + _Off)); }
-				bool operator==(const iterator& _Right_cref) const { return msevector_ss_iterator_type().operator==(_Right_cref.msevector_ss_iterator_type()); }
-				bool operator!=(const iterator& _Right_cref) const { return (!(_Right_cref == (*this))); }
-				bool operator<(const iterator& _Right) const { return (msevector_ss_iterator_type() < _Right.msevector_ss_iterator_type()); }
-				bool operator<=(const iterator& _Right) const { return (msevector_ss_iterator_type() <= _Right.msevector_ss_iterator_type()); }
-				bool operator>(const iterator& _Right) const { return (msevector_ss_iterator_type() > _Right.msevector_ss_iterator_type()); }
-				bool operator>=(const iterator& _Right) const { return (msevector_ss_iterator_type() >= _Right.msevector_ss_iterator_type()); }
+				bool operator==(const const_iterator& _Right_cref) const { return (const_iterator(*this) == _Right_cref); }
+				bool operator!=(const const_iterator& _Right_cref) const { return (const_iterator(*this) != _Right_cref); }
+				bool operator<(const const_iterator& _Right_cref) const { return (const_iterator(*this) < _Right_cref); }
+				bool operator>(const const_iterator& _Right_cref) const { return (const_iterator(*this) > _Right_cref); }
+				bool operator<=(const const_iterator& _Right_cref) const { return (const_iterator(*this) <= _Right_cref); }
+				bool operator>=(const const_iterator& _Right_cref) const { return (const_iterator(*this) >= _Right_cref); }
+
 				void set_to_item_pointer(const iterator& _Right_cref) { msevector_ss_iterator_type().set_to_item_pointer(_Right_cref.msevector_ss_iterator_type()); }
 				msev_size_t position() const { return msevector_ss_iterator_type().position(); }
 				auto target_container_ptr() const -> decltype(msevector_ss_iterator_type().target_container_ptr()) {
@@ -584,13 +596,13 @@ namespace mse {
 				return retval;
 			}
 			iterator insert_before(const const_iterator &pos, _Ty&& _X) {
-				auto res = m_shptr->insert_before(pos.msevector_ss_const_iterator_type(), std::forward<decltype(_X)>(_X));
+				auto res = m_shptr->insert_before(pos.msevector_ss_const_iterator_type(), MSE_FWD(_X));
 				iterator retval = begin(); retval.msevector_ss_iterator_type() = res;
 				return retval;
 			}
 			iterator insert_before(const const_iterator &pos, const _Ty& _X = _Ty()) { return insert_before(pos, 1, _X); }
 			template<class _Iter
-				//>typename std::enable_if<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>::type
+				//>mse::impl::enable_if_t<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>
 				, class = mse::impl::_mse_RequireInputIter<_Iter> >
 				iterator insert_before(const const_iterator &pos, const _Iter &start, const _Iter &end) {
 				auto res = m_shptr->insert_before(pos.msevector_ss_const_iterator_type(), start, end);
@@ -598,7 +610,7 @@ namespace mse {
 				return retval;
 			}
 			template<class _Iter
-				//>typename std::enable_if<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>::type
+				//>mse::impl::enable_if_t<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>
 				, class = mse::impl::_mse_RequireInputIter<_Iter> >
 				iterator insert_before_inclusive(const const_iterator &pos, const _Iter &first, const _Iter &last) {
 				auto end = last; end++;
@@ -620,10 +632,10 @@ namespace mse {
 			}
 			/* These insert() functions are just aliases for their corresponding insert_before() functions. */
 			iterator insert(const const_iterator &pos, size_type _M, const _Ty& _X) { return insert_before(pos, _M, _X); }
-			iterator insert(const const_iterator &pos, _Ty&& _X) { return insert_before(pos, std::forward<decltype(_X)>(_X)); }
+			iterator insert(const const_iterator &pos, _Ty&& _X) { return insert_before(pos, MSE_FWD(_X)); }
 			iterator insert(const const_iterator &pos, const _Ty& _X = _Ty()) { return insert_before(pos, _X); }
 			template<class _Iter
-				//>typename std::enable_if<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>::type
+				//>mse::impl::enable_if_t<mse::impl::_mse_Is_iterator<_Iter>::value, typename base_class::iterator>
 				, class = mse::impl::_mse_RequireInputIter<_Iter> >
 				iterator insert(const const_iterator &pos, const _Iter &start, const _Iter &end) { return insert_before(pos, start, end); }
 			iterator insert(const const_iterator &pos, const _Ty* start, const _Ty* end) { return insert_before(pos, start, end); }
@@ -657,8 +669,8 @@ namespace mse {
 
 			void async_not_shareable_tag() const {}
 			/* this array should be safely passable iff the element type is safely passable */
-			template<class _Ty2 = _Ty, class = typename std::enable_if<(std::is_same<_Ty2, _Ty>::value)
-				&& (mse::impl::is_marked_as_passable_msemsearray<_Ty2>::value), void>::type>
+			template<class _Ty2 = _Ty, MSE_IMPL_EIP mse::impl::enable_if_t<(std::is_same<_Ty2, _Ty>::value)
+				&& (mse::impl::is_marked_as_passable_msemsearray<_Ty2>::value)> MSE_IMPL_EIS >
 			void async_passable_tag() const {}
 
 		private:
@@ -773,8 +785,8 @@ namespace std {
 	{	// swap vectors
 		return (_Left.swap(_Right));
 	}
-	template<class _Ty, class _A, class _TStateMutex, template<typename> class _TTXScopeConstIterator/*, class = enable_if_t<_Is_swappable<_Ty>::value>*/>
-	void swap(mse::mstd::vector<_Ty, _A>& _Left, mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex, _TTXScopeConstIterator>& _Right) _NOEXCEPT_OP(_NOEXCEPT_OP(_Left.swap(_Right)))
+	template<class _Ty, class _A, class _TStateMutex, template<typename> class _TTXScopeConstIterator, class TConstLockableIndicator/*, class = enable_if_t<_Is_swappable<_Ty>::value>*/>
+	void swap(mse::mstd::vector<_Ty, _A>& _Left, mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex, _TTXScopeConstIterator, TConstLockableIndicator>& _Right) _NOEXCEPT_OP(_NOEXCEPT_OP(_Left.swap(_Right)))
 	{	// swap vectors
 		return (_Left.swap(_Right));
 	}
@@ -789,8 +801,8 @@ namespace std {
 		return (_Left.swap(_Right));
 	}
 
-	template<class _Ty, class _A, class _TStateMutex, template<typename> class _TTXScopeConstIterator/*, class = enable_if_t<_Is_swappable<_Ty>::value>*/>
-	void swap(mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex, _TTXScopeConstIterator>& _Left, mse::mstd::vector<_Ty, _A>& _Right) _NOEXCEPT_OP(_NOEXCEPT_OP(_Right.swap(_Left)))
+	template<class _Ty, class _A, class _TStateMutex, template<typename> class _TTXScopeConstIterator, class TConstLockableIndicator/*, class = enable_if_t<_Is_swappable<_Ty>::value>*/>
+	void swap(mse::us::impl::gnii_vector<_Ty, _A, _TStateMutex, _TTXScopeConstIterator, TConstLockableIndicator>& _Left, mse::mstd::vector<_Ty, _A>& _Right) _NOEXCEPT_OP(_NOEXCEPT_OP(_Right.swap(_Left)))
 	{	// swap vectors
 		return (_Right.swap(_Left));
 	}
