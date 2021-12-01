@@ -1,6 +1,6 @@
-Feb 2021
+Nov 2021
 
-This is a version of the [LodePNG](https://github.com/lvandeve/lodepng) png encoder/decoder that has been converted to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) as part of a demonstration of the SaferCPlusPlus [conversion assistance tool](https://github.com/duneroadrunner/scpptool).
+This is a version of the [LodePNG](https://github.com/lvandeve/lodepng) png encoder/decoder that has been converted to [SaferCPlusPlus](https://github.com/duneroadrunner/SaferCPlusPlus) as part of a demonstration of the SaferCPlusPlus [conversion assistance tool](https://github.com/duneroadrunner/scpptool). Note that in this example only the lodepng.cpp, example_sdl.cpp and lodepng.h files have been converted.
 
 --------
 
