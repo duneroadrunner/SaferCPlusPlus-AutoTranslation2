@@ -44,7 +44,7 @@ So, from the source directory of the new copy of the project, we first convert t
 
     {scpptool_executable_directory}/scpptool -ConvertToSCPP lodepng.cpp example_sdl.cpp -- -I.. -I../msetl -lSDL -std=c++17 -I'{the llvm10 directory}/lib/clang/10.0.0/include'
 
-This command will spew a whole bunch of stuff to the screen, including what may look like error messages. This is just the output of a "static analysis" pass that is executed as part of the conversion process. At the end you may get a message that says "merge: warning: conflicts during merge". While this indicates the possibility of an invalid conversion, its not abnormal and by default the conversion tool attempts to resolve "its merge conflicts" automatically (with a heuristic).
+This command will spew a whole bunch of stuff to the screen, including what may look like error messages. This is just the output of a "static analysis" pass that is executed as part of the conversion process. At the end you may get a message that says "merge: warning: conflicts during merge". While this indicates the possibility of an invalid conversion, it's not abnormal and by default the conversion tool attempts to resolve "its merge conflicts" automatically (with a heuristic).
 
 So this conversion command results in three files being modified - lodepng.cpp, example_sdl.cpp and the header file they include, lodepng.h. The translated files now include the "mselegacyhelpers.h" SaferCPlusPlus header file, so the SaferCPlusPlus directory needs to be specified as an include directory. So the new compile command looks like:
 
