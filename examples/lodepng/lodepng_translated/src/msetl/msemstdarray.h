@@ -303,11 +303,13 @@ namespace mse {
 			_CONST_FUN typename _MA::const_reference back() const { return contained_array().back(); }
 
 			/* Try to avoid using these whenever possible. */
-			value_type *data() _NOEXCEPT {	// return pointer to mutable data array
-				return contained_array().data();
+			MSE_DEPRECATED value_type *data() _NOEXCEPT {	// return pointer to mutable data array
+				//return contained_array().data();
+				return empty() ? nullptr : std::addressof(front());
 			}
-			const value_type *data() const _NOEXCEPT {	// return pointer to nonmutable data array
-				return contained_array().data();
+			MSE_DEPRECATED const value_type *data() const _NOEXCEPT {	// return pointer to nonmutable data array
+				//return contained_array().data();
+				return empty() ? nullptr : std::addressof(front());
 			}
 
 
@@ -324,14 +326,13 @@ namespace mse {
 				typedef typename _MA::template Tss_const_iterator_type<mse::TRegisteredConstPointer<_MA>> base_class;
 				MSE_USING(reg_ss_const_iterator_type, base_class);
 				reg_ss_const_iterator_type(const base_class& src) : base_class(src) {}
-				reg_ss_const_iterator_type(const reg_ss_iterator_type& src) {
-					(*this).m_owner_cptr = src.m_owner_ptr;
-					(*this).m_index = src.m_index;
-				}
+				reg_ss_const_iterator_type(const reg_ss_iterator_type& src) : base_class(src) {}
 			};
 
 			typedef Tarray_xscope_const_iterator<_Ty, _Size> xscope_const_iterator;
 			typedef Tarray_xscope_iterator<_Ty, _Size> xscope_iterator;
+
+			class iterator;
 
 			class const_iterator : public _MA::na_const_iterator_base {
 			public:
@@ -340,6 +341,7 @@ namespace mse {
 
 				const_iterator() {}
 				const_iterator(const const_iterator& src_cref) = default;
+				const_iterator(const iterator& src_cref) : m_reg_ss_const_iterator(src_cref.m_reg_ss_iterator) {}
 				~const_iterator() {}
 				const reg_ss_const_iterator_type& nii_array_reg_ss_const_iterator_type() const {
 					//if (!contained_array()_regcptr) { MSE_THROW(mstdarray_range_error("attempt to use an invalid iterator - mse::mstd::array<>::const_iterator")); }
@@ -381,12 +383,8 @@ namespace mse {
 				typename _MA::const_reference previous_item() const { return nii_array_reg_ss_const_iterator_type().previous_item(); }
 				typename _MA::const_pointer operator->() const { return nii_array_reg_ss_const_iterator_type().operator->(); }
 				typename _MA::const_reference operator[](typename _MA::difference_type _Off) const { return nii_array_reg_ss_const_iterator_type()[_Off]; }
-				bool operator==(const const_iterator& _Right_cref) const { return nii_array_reg_ss_const_iterator_type().operator==(_Right_cref.nii_array_reg_ss_const_iterator_type()); }
-				bool operator!=(const const_iterator& _Right_cref) const { return (!(_Right_cref == (*this))); }
-				bool operator<(const const_iterator& _Right) const { return (nii_array_reg_ss_const_iterator_type() < _Right.nii_array_reg_ss_const_iterator_type()); }
-				bool operator<=(const const_iterator& _Right) const { return (nii_array_reg_ss_const_iterator_type() <= _Right.nii_array_reg_ss_const_iterator_type()); }
-				bool operator>(const const_iterator& _Right) const { return (nii_array_reg_ss_const_iterator_type() > _Right.nii_array_reg_ss_const_iterator_type()); }
-				bool operator>=(const const_iterator& _Right) const { return (nii_array_reg_ss_const_iterator_type() >= _Right.nii_array_reg_ss_const_iterator_type()); }
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_GIVEN_SUBTRACTION(const_iterator)
+
 				void set_to_const_item_pointer(const const_iterator& _Right_cref) { nii_array_reg_ss_const_iterator_type().set_to_const_item_pointer(_Right_cref.nii_array_reg_ss_const_iterator_type()); }
 				msear_size_t position() const { return nii_array_reg_ss_const_iterator_type().position(); }
 				auto target_container_ptr() const -> decltype(nii_array_reg_ss_const_iterator_type().target_container_ptr()) {
@@ -423,6 +421,7 @@ namespace mse {
 				}
 				const reg_ss_iterator_type& mvssi() const { return nii_array_reg_ss_iterator_type(); }
 				reg_ss_iterator_type& mvssi() { return nii_array_reg_ss_iterator_type(); }
+				/*
 				operator const_iterator() const {
 					auto nii_array_regptr = m_reg_ss_iterator.target_container_ptr();
 					const_iterator retval(nii_array_regptr);
@@ -432,6 +431,7 @@ namespace mse {
 					}
 					return retval;
 				}
+				*/
 
 				typename _MA::reference operator*() const { return nii_array_reg_ss_iterator_type().operator*(); }
 				typename _MA::reference item() const { return operator*(); }
@@ -465,12 +465,7 @@ namespace mse {
 				typename _MA::difference_type operator-(const const_iterator& _Right_cref) const {
 					return (const_iterator(*this) - _Right_cref);
 				}
-				bool operator==(const const_iterator& _Right_cref) const { return (const_iterator(*this) == _Right_cref); }
-				bool operator!=(const const_iterator& _Right_cref) const { return (const_iterator(*this) != _Right_cref); }
-				bool operator<(const const_iterator& _Right_cref) const { return (const_iterator(*this) < _Right_cref); }
-				bool operator>(const const_iterator& _Right_cref) const { return (const_iterator(*this) > _Right_cref); }
-				bool operator<=(const const_iterator& _Right_cref) const { return (const_iterator(*this) <= _Right_cref); }
-				bool operator>=(const const_iterator& _Right_cref) const { return (const_iterator(*this) >= _Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_OPERATOR_DELEGATING_DECLARATIONS(iterator, const_iterator)
 
 				void set_to_item_pointer(const iterator& _Right_cref) { nii_array_reg_ss_iterator_type().set_to_item_pointer(_Right_cref.nii_array_reg_ss_iterator_type()); }
 				msear_size_t position() const { return nii_array_reg_ss_iterator_type().position(); }
@@ -482,6 +477,7 @@ namespace mse {
 				reg_ss_iterator_type m_reg_ss_iterator;
 
 				friend class /*_Myt*/array<_Ty, _Size>;
+				friend class const_iterator;
 				friend /*class*/ xscope_const_iterator;
 				friend /*class*/ xscope_iterator;
 			};
@@ -541,13 +537,13 @@ namespace mse {
 				return (rend());
 			}
 
-
-			bool operator==(const _Myt& _Right) const {	// test for array equality
-				return (_Right.contained_array() == contained_array());
-			}
-			bool operator<(const _Myt& _Right) const {	// test if _Left < _Right for arrays
-				return (contained_array() < _Right.contained_array());
-			}
+			friend bool operator==(const _Myt& _Left, const _Myt& _Right) { return (_Left.contained_array() == _Right.contained_array()); }
+			MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_IF_ANY(_Myt)
+#ifndef MSE_HAS_CXX20
+			friend bool operator<(const _Myt& _Left, const _Myt& _Right) { return (_Left.contained_array() < _Right.contained_array()); }
+#else // !MSE_HAS_CXX20
+			friend std::strong_ordering operator<=>(const _Myt& _Left, const _Myt& _Right) { return (_Left.contained_array() <=> _Right.contained_array()); }
+#endif // !MSE_HAS_CXX20
 
 			void async_not_shareable_tag() const {}
 			/* this array should be safely passable iff the element type is safely passable */
@@ -589,26 +585,6 @@ namespace mse {
 			array(_First, _Rest...)
 			->array<typename mse::impl::_mse_Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif /* MSE_HAS_CXX17 */
-
-		template<class _Ty, size_t _Size> inline bool operator!=(const array<_Ty, _Size>& _Left,
-			const array<_Ty, _Size>& _Right) {	// test for array inequality
-			return (!(_Left == _Right));
-		}
-
-		template<class _Ty, size_t _Size> inline bool operator>(const array<_Ty, _Size>& _Left,
-			const array<_Ty, _Size>& _Right) {	// test if _Left > _Right for arrays
-			return (_Right < _Left);
-		}
-
-		template<class _Ty, size_t _Size> inline bool operator<=(const array<_Ty, _Size>& _Left,
-			const array<_Ty, _Size>& _Right) {	// test if _Left <= _Right for arrays
-			return (!(_Right < _Left));
-		}
-
-		template<class _Ty, size_t _Size> inline bool operator>=(const array<_Ty, _Size>& _Left,
-			const array<_Ty, _Size>& _Right) {	// test if _Left >= _Right for arrays
-			return (!(_Left < _Right));
-		}
 
 		template<class _TArray> using xscope_array_const_iterator = typename _TArray::xscope_const_iterator;
 		template<class _TArray> using xscope_array_iterator = typename _TArray::xscope_iterator;

@@ -320,6 +320,7 @@ namespace mse {
 		template <typename _TPointer1, MSE_IMPL_EIP mse::impl::enable_if_t<
 			(!std::is_convertible<_TPointer1, us::impl::TAnyPointerBase<_Ty>>::value)
 			&& (!std::is_base_of<us::impl::TAnyConstPointerBase<_Ty>, _TPointer1>::value)
+			&& MSE_IMPL_TARGET_CAN_BE_REFERENCED_AS_CRITERIA1(_TPointer1, _Ty)
 			> MSE_IMPL_EIS >
 			TXScopeAnyPointer(const _TPointer1& pointer) : base_class(pointer) {}
 
@@ -360,9 +361,8 @@ namespace mse {
 		template <typename _TPointer1, MSE_IMPL_EIP mse::impl::enable_if_t<
 			(!std::is_convertible<_TPointer1, TAnyPointer>::value)
 			&& (!std::is_base_of<TAnyConstPointer<_Ty>, _TPointer1>::value)
-			&& (mse::impl::IsDereferenceable_msemsearray<_TPointer1>::value
-				&& (std::is_base_of<_Ty, mse::impl::remove_reference_t<decltype(*std::declval<_TPointer1>())>>::value
-					|| std::is_same<_Ty, mse::impl::remove_reference_t<decltype(*std::declval<_TPointer1>())>>::value))
+			&& (!std::is_base_of<TAnyConstPointer<_Ty>, _TPointer1>::value)
+			&& MSE_IMPL_TARGET_CAN_BE_REFERENCED_AS_CRITERIA1(_TPointer1, _Ty)
 			&& mse::impl::is_potentially_not_xscope<_TPointer1>::value
 		> MSE_IMPL_EIS >
 		TAnyPointer(const _TPointer1& pointer) : base_class(pointer) {
@@ -398,13 +398,16 @@ namespace mse {
 	public:
 		typedef us::impl::TAnyConstPointerBase<_Ty> base_class;
 		TXScopeAnyConstPointer(const us::impl::TAnyConstPointerBase<_Ty>& src) : base_class(src) {}
+		/*
 		TXScopeAnyConstPointer(const us::impl::TAnyPointerBase<_Ty>& src) : base_class(src) {}
 
 		template <typename _TPointer1, MSE_IMPL_EIP mse::impl::enable_if_t<
 			(!std::is_convertible<_TPointer1, us::impl::TAnyConstPointerBase<_Ty>>::value)
 			&& (!std::is_convertible<_TPointer1, us::impl::TAnyPointerBase<_Ty>>::value)
+			&& MSE_IMPL_TARGET_CAN_BE_REFERENCED_AS_CRITERIA1(_TPointer1, _Ty)
 			> MSE_IMPL_EIS >
-			TXScopeAnyConstPointer(const _TPointer1& pointer) : base_class(pointer) {}
+		TXScopeAnyConstPointer(const _TPointer1& pointer) : base_class(pointer) {}
+		*/
 
 		void async_not_shareable_and_not_passable_tag() const {}
 
@@ -443,6 +446,7 @@ namespace mse {
 		template <typename _TPointer1, MSE_IMPL_EIP mse::impl::enable_if_t<
 			(!std::is_convertible<_TPointer1, TAnyConstPointer>::value)
 			&& (!std::is_convertible<_TPointer1, TAnyPointer<_Ty>>::value)
+			&& MSE_IMPL_TARGET_CAN_BE_REFERENCED_AS_CRITERIA1(_TPointer1, _Ty)
 			> MSE_IMPL_EIS >
 		TAnyConstPointer(const _TPointer1& pointer) : base_class(pointer) {
 			mse::impl::T_valid_if_not_an_xscope_type<_TPointer1>();
@@ -493,7 +497,7 @@ namespace mse {
 			template<typename _TRALoneParam>
 			TFParam(_TRALoneParam&& src) : base_class(constructor_helper1(
 #ifndef MSE_SCOPEPOINTER_DISABLED
-				typename mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedItemFixedConstPointerToRValue>::type()
+				typename mse::rsv::impl::is_instantiation_of_TXScopeCagedItemFixedConstPointerToRValue<_TRALoneParam>::type()
 #else //!MSE_SCOPEPOINTER_DISABLED
 				std::false_type()
 #endif //!MSE_SCOPEPOINTER_DISABLED
@@ -1021,7 +1025,7 @@ namespace mse {
 			template<typename _TRALoneParam>
 			TFParam(_TRALoneParam&& src) : base_class(constructor_helper1(
 #ifndef MSE_SCOPEPOINTER_DISABLED
-				typename mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedItemFixedConstPointerToRValue>::type()
+				typename mse::rsv::impl::is_instantiation_of_TXScopeCagedItemFixedConstPointerToRValue<_TRALoneParam>::type()
 #else //!MSE_SCOPEPOINTER_DISABLED
 				std::false_type()
 #endif //!MSE_SCOPEPOINTER_DISABLED
@@ -1124,11 +1128,18 @@ namespace mse {
 				virtual void operator --(int) { operator -=(1); }
 				virtual difference_type operator-(const TCommonRandomAccessIteratorInterface& _Right_cref) const = 0;
 				virtual bool operator==(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return (0 == operator-(_Right_cref)); }
+#ifndef MSE_HAS_CXX20
 				virtual bool operator!=(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return !(operator==(_Right_cref)); }
 				virtual bool operator<(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return (0 > operator-(_Right_cref)); }
 				virtual bool operator>(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return (0 > operator-(_Right_cref)); }
 				virtual bool operator<=(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
 				virtual bool operator>=(const TCommonRandomAccessIteratorInterface& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
+#else // !MSE_HAS_CXX20
+				virtual std::strong_ordering operator<=>(const TCommonRandomAccessIteratorInterface& _Right_cref) const {
+					auto diff = operator-(_Right_cref);
+					return (diff <=> 0); /* that's the right order, right? */
+				}
+#endif // !MSE_HAS_CXX20
 			};
 
 			template <typename _Ty, typename _TRandomAccessIterator1>
@@ -1175,7 +1186,9 @@ namespace mse {
 				TAnyRandomAccessIteratorBase(const TAnyRandomAccessIteratorBase& src) : m_any_random_access_iterator(src.m_any_random_access_iterator) {}
 				TAnyRandomAccessIteratorBase(_Ty arr[]) : m_any_random_access_iterator(TCommonizedRandomAccessIterator<_Ty, _Ty*>(arr)) {}
 
-				template <typename _TRandomAccessIterator1, MSE_IMPL_EIP mse::impl::enable_if_t<!std::is_convertible<_TRandomAccessIterator1, TAnyRandomAccessIteratorBase>::value> MSE_IMPL_EIS >
+				template <typename _TRandomAccessIterator1, MSE_IMPL_EIP mse::impl::enable_if_t<
+					(!std::is_convertible<_TRandomAccessIterator1 const *, TAnyRandomAccessIteratorBase const *>::value)
+					&& (!std::is_convertible<_TRandomAccessIterator1 const*, TAnyRandomAccessConstIteratorBase<_Ty> const*>::value)> MSE_IMPL_EIS >
 				TAnyRandomAccessIteratorBase(const _TRandomAccessIterator1& random_access_iterator) : m_any_random_access_iterator(constructor_helper1(typename std::is_base_of< TAnyRandomAccessIteratorBase<mse::impl::remove_const_t<_Ty> >, _TRandomAccessIterator1>::type(), random_access_iterator)) {}
 
 				friend void swap(TAnyRandomAccessIteratorBase& first, TAnyRandomAccessIteratorBase& second) {
@@ -1203,12 +1216,8 @@ namespace mse {
 				difference_type operator-(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const {
 					return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) - _Right_cref);
 				}
-				bool operator==(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) == _Right_cref); }
-				bool operator!=(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) != _Right_cref); }
-				bool operator<(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) < _Right_cref); }
-				bool operator>(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) > _Right_cref); }
-				bool operator<=(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) <= _Right_cref); }
-				bool operator>=(const TAnyRandomAccessConstIteratorBase<_Ty>& _Right_cref) const { return (TAnyRandomAccessConstIteratorBase<_Ty>(*this) >= _Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_OPERATOR_DELEGATING_DECLARATIONS(TAnyRandomAccessIteratorBase, TAnyRandomAccessConstIteratorBase<_Ty>)
+
 				TAnyRandomAccessIteratorBase& operator=(TAnyRandomAccessIteratorBase _Right) {
 					swap(*this, _Right);
 					return (*this);
@@ -1237,7 +1246,7 @@ namespace mse {
 					return retval;
 				}
 
-				mse::any m_any_random_access_iterator;
+				mse::us::impl::ns_any::any m_any_random_access_iterator;
 
 				template <typename _Ty2>
 				friend class TAnyRandomAccessConstIteratorBase;
@@ -1261,11 +1270,18 @@ namespace mse {
 				virtual void operator --(int) { operator -=(1); }
 				virtual difference_type operator-(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const = 0;
 				virtual bool operator==(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return (0 == operator-(_Right_cref)); }
+#ifndef MSE_HAS_CXX20
 				virtual bool operator!=(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return !(operator==(_Right_cref)); }
 				virtual bool operator<(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return (0 > operator-(_Right_cref)); }
 				virtual bool operator>(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return (0 > operator-(_Right_cref)); }
 				virtual bool operator<=(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
 				virtual bool operator>=(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
+#else // !MSE_HAS_CXX20
+				virtual std::strong_ordering operator<=>(const TCommonRandomAccessConstIteratorInterface& _Right_cref) const {
+					auto diff = operator-(_Right_cref);
+					return (diff <=> 0); /* that's the right order, right? */
+				}
+#endif // !MSE_HAS_CXX20
 			};
 
 			template <typename _Ty, typename _TRandomAccessConstIterator1>
@@ -1338,12 +1354,8 @@ namespace mse {
 				difference_type operator-(const TAnyRandomAccessConstIteratorBase& _Right_cref) const {
 					return (*common_random_access_const_iterator_interface_ptr()) - (*(_Right_cref.common_random_access_const_iterator_interface_ptr()));
 				}
-				bool operator==(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return (0 == operator-(_Right_cref)); }
-				bool operator!=(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return !(operator==(_Right_cref)); }
-				bool operator<(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return (0 > operator-(_Right_cref)); }
-				bool operator>(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return (0 > operator-(_Right_cref)); }
-				bool operator<=(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
-				bool operator>=(const TAnyRandomAccessConstIteratorBase& _Right_cref) const { return (0 >= operator-(_Right_cref)); }
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_GIVEN_SUBTRACTION(TAnyRandomAccessConstIteratorBase)
+
 				TAnyRandomAccessConstIteratorBase& operator=(TAnyRandomAccessConstIteratorBase _Right) {
 					swap(*this, _Right);
 					return (*this);
@@ -1372,7 +1384,7 @@ namespace mse {
 					return retval;
 				}
 
-				mse::any m_any_random_access_const_iterator;
+				mse::us::impl::ns_any::any m_any_random_access_const_iterator;
 			};
 		}
 	}
@@ -1617,8 +1629,8 @@ namespace mse {
 			TFParam(_TRALoneParam&& src) : base_class(constructor_helper1(
 #ifndef MSE_SCOPEPOINTER_DISABLED
 				mse::impl::conditional_t<
-				mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedItemFixedConstPointerToRValue>::value
-				|| mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedRandomAccessConstSectionToRValue>::value
+				mse::rsv::impl::is_instantiation_of_TXScopeCagedItemFixedConstPointerToRValue<_TRALoneParam>::value
+				|| mse::impl::is_instantiation_of<_TRALoneParam, TXScopeCagedRandomAccessConstSectionToRValue>::value
 				, std::true_type, std::false_type>()
 #else //!MSE_SCOPEPOINTER_DISABLED
 				std::false_type()
@@ -1732,7 +1744,7 @@ namespace mse {
 			TFParam(_TRALoneParam&& src) : base_class(constructor_helper1(
 #ifndef MSE_SCOPEPOINTER_DISABLED
 				mse::impl::conditional_t<
-				mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedItemFixedConstPointerToRValue>::value
+				mse::rsv::impl::is_instantiation_of_TXScopeCagedItemFixedConstPointerToRValue<_TRALoneParam>::value
 				|| std::is_base_of<mse::us::impl::CagedStringSectionTagBase, _TRALoneParam>::value
 				//|| mse::impl::is_instantiation_of<_TRALoneParam, mse::TXScopeCagedStringConstSectionToRValue>::value
 				, std::true_type, std::false_type>()
@@ -1779,7 +1791,7 @@ namespace mse {
 
 		template<typename _Ty, typename _TRALoneParam>
 		void T_valid_if_not_a_pointer_to_an_std_basic_string_msepoly() {
-			T_valid_if_not_a_pointer_to_an_std_basic_string_msepoly_helper<_Ty, _TRALoneParam>(typename IsDereferenceable_msemsearray<_TRALoneParam>::type());
+			T_valid_if_not_a_pointer_to_an_std_basic_string_msepoly_helper<_Ty, _TRALoneParam>(typename IsDereferenceable_pb<_TRALoneParam>::type());
 		}
 
 		template<typename _Ty, typename _TRALoneParam>
@@ -2093,9 +2105,11 @@ namespace mse {
 			else if ((*this).m_is_null) {
 				return true;
 			}
-			return base_class::operator==(rhs);
+			return mse::us::impl::as_ref<base_class>(*this) == mse::us::impl::as_ref<base_class>(rhs);
 		}
+#ifndef MSE_HAS_CXX20
 		bool operator!=(const TNullableAnyRandomAccessIterator& rhs) const { return !((*this) == rhs); }
+#endif // !MSE_HAS_CXX20
 
 		TNullableAnyRandomAccessIterator& operator=(const std::nullptr_t& _Right_cref) {
 			return operator=(TNullableAnyRandomAccessIterator());
@@ -2161,9 +2175,11 @@ namespace mse {
 			else if ((*this).m_is_null) {
 				return true;
 			}
-			return base_class::operator==(rhs);
+			return mse::us::impl::as_ref<base_class>(*this) == mse::us::impl::as_ref<base_class>(rhs);
 		}
+#ifndef MSE_HAS_CXX20
 		bool operator!=(const TXScopeNullableAnyRandomAccessIterator& rhs) const { return !((*this) == rhs); }
+#endif // !MSE_HAS_CXX20
 
 		explicit operator bool() const {
 			return (!m_is_null);
@@ -2206,10 +2222,7 @@ namespace mse {
 			(!std::is_convertible<_TPointer1, TNullableAnyPointer>::value)
 			&& (!std::is_base_of<base_class, _TPointer1>::value)
 			&& (!std::is_convertible<_TPointer1, std::nullptr_t>::value)
-			//&& (!std::is_convertible<_TPointer1, decltype(NULL)>::value)
-			&& (mse::impl::IsDereferenceable_msemsearray<_TPointer1>::value
-				&& (std::is_base_of<_Ty, mse::impl::remove_reference_t<decltype(*std::declval<_TPointer1>())>>::value
-					|| std::is_same<_Ty, mse::impl::remove_reference_t<decltype(*std::declval<_TPointer1>())>>::value))
+			&& MSE_IMPL_TARGET_CAN_BE_REFERENCED_AS_CRITERIA1(_TPointer1, _Ty)
 			&& mse::impl::is_potentially_not_xscope<_TPointer1>::value
 			> MSE_IMPL_EIS >
 		TNullableAnyPointer(const _TPointer1& pointer) : base_class(pointer) {
@@ -2221,9 +2234,6 @@ namespace mse {
 			std::swap(first.m_is_null, second.m_is_null);
 		}
 
-		TNullableAnyPointer& operator=(const std::nullptr_t& _Right_cref) {
-			return operator=(TNullableAnyPointer());
-		}
 		TNullableAnyPointer& operator=(TNullableAnyPointer _Right) {
 			swap(*this, _Right);
 			return (*this);
@@ -2236,9 +2246,12 @@ namespace mse {
 			else if ((*this).m_is_null) {
 				return true;
 			}
-			return base_class::operator==(rhs);
+			return mse::us::impl::as_ref<base_class>(*this) == mse::us::impl::as_ref<base_class>(rhs);
 		}
+#ifndef MSE_HAS_CXX20
 		bool operator!=(const TNullableAnyPointer& rhs) const { return !((*this) == rhs); }
+#endif // !MSE_HAS_CXX20
+
 
 		operator bool() const {
 			return (!m_is_null);
@@ -2297,9 +2310,11 @@ namespace mse {
 			else if ((*this).m_is_null) {
 				return true;
 			}
-			return base_class::operator==(rhs);
+			return mse::us::impl::as_ref<base_class>(*this) == mse::us::impl::as_ref<base_class>(rhs);
 		}
+#ifndef MSE_HAS_CXX20
 		bool operator!=(const TXScopeNullableAnyPointer& rhs) const { return !((*this) == rhs); }
+#endif // !MSE_HAS_CXX20
 
 		operator bool() const {
 			return (!m_is_null);

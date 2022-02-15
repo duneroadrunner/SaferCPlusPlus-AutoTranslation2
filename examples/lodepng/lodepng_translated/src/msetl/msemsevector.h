@@ -194,7 +194,7 @@ namespace mse {
 
 		template<class _Iter>
 		struct _mse_Is_iterator : public std::integral_constant<bool, /*(!std::is_integral<_Iter>::value) && */
-				mse::impl::IsDereferenceable_msemsearray<_Iter>::value && mse::impl::SupportsPreIncrement_msemsevector<_Iter>::value>
+				mse::impl::IsDereferenceable_pb<_Iter>::value && mse::impl::SupportsPreIncrement_msemsevector<_Iter>::value>
 		{	// tests for reasonable iterator candidate
 		};
 
@@ -532,8 +532,8 @@ namespace mse {
 				template<class _TVectorConstPointer2 = _TVectorConstPointer, MSE_IMPL_EIP mse::impl::enable_if_t<(std::is_same<_TVectorConstPointer2, _TVectorConstPointer>::value) && (std::is_default_constructible<_TVectorConstPointer>::value)> MSE_IMPL_EIS >
 				Tgnii_vector_ss_const_iterator_type() {}
 
-				Tgnii_vector_ss_const_iterator_type(const _TVectorConstPointer& owner_cptr) : base_class(owner_cptr) {}
-				Tgnii_vector_ss_const_iterator_type(_TVectorConstPointer&& owner_cptr) : base_class(MSE_FWD(owner_cptr)) {}
+				Tgnii_vector_ss_const_iterator_type(const _TVectorConstPointer& owner_cptr, size_type index) : base_class(owner_cptr, index) {}
+				Tgnii_vector_ss_const_iterator_type(_TVectorConstPointer&& owner_cptr, size_type index) : base_class(MSE_FWD(owner_cptr), index) {}
 
 				Tgnii_vector_ss_const_iterator_type(Tgnii_vector_ss_const_iterator_type&& src) = default;
 				Tgnii_vector_ss_const_iterator_type(const Tgnii_vector_ss_const_iterator_type& src) = default;
@@ -586,8 +586,8 @@ namespace mse {
 				template<class _TVectorPointer2 = _TVectorPointer, MSE_IMPL_EIP mse::impl::enable_if_t<(std::is_same<_TVectorPointer2, _TVectorPointer>::value) && (std::is_default_constructible<_TVectorPointer>::value)> MSE_IMPL_EIS >
 				Tgnii_vector_ss_iterator_type() {}
 
-				Tgnii_vector_ss_iterator_type(const _TVectorPointer& owner_ptr) : base_class(owner_ptr) {}
-				Tgnii_vector_ss_iterator_type(_TVectorPointer&& owner_ptr) : base_class(MSE_FWD(owner_ptr)) {}
+				Tgnii_vector_ss_iterator_type(const _TVectorPointer& owner_ptr, size_type index) : base_class(owner_ptr, index) {}
+				Tgnii_vector_ss_iterator_type(_TVectorPointer&& owner_ptr, size_type index) : base_class(MSE_FWD(owner_ptr), index) {}
 
 				Tgnii_vector_ss_iterator_type(Tgnii_vector_ss_iterator_type&& src) = default;
 				Tgnii_vector_ss_iterator_type(const Tgnii_vector_ss_iterator_type& src) = default;
@@ -763,11 +763,11 @@ namespace mse {
 				/* Normally we would just use the macro for inheriting assignment operators, but here we need to exclude any
 				that handle Tgnii_vector_xscope_cslsstrong_iterator_type<>s, because that class needs to be handled a bit
 				differently. */
-				template<class _Ty2mse_uao, class _Tbase_class2 = base_class, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::HasOrInheritsAssignmentOperator_msepointerbasics<_Tbase_class2>::value \
+				template<class _Ty2mse_uao, class _Tbase_class2 = base_class, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::HasOrInheritsAssignmentOperator_pb<_Tbase_class2>::value \
 					&& (!std::is_same<Tgnii_vector_xscope_cslsstrong_iterator_type<_TVector>, mse::impl::remove_reference_t<_Ty2mse_uao> >::value) \
 					&& ((!mse::impl::is_a_pair_with_the_first_a_base_of_the_second<_Tbase_class2, _Ty2mse_uao>::value) || std::is_same<_Tbase_class2, mse::impl::remove_reference_t<_Ty2mse_uao> >::value)> MSE_IMPL_EIS > \
 				auto& operator=(_Ty2mse_uao&& _X) { base_class::operator=(MSE_FWD(_X)); return (*this); } \
-				template<class _Ty2mse_uao, class _Tbase_class2 = base_class, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::HasOrInheritsAssignmentOperator_msepointerbasics<_Tbase_class2>::value \
+				template<class _Ty2mse_uao, class _Tbase_class2 = base_class, MSE_IMPL_EIP mse::impl::enable_if_t<mse::impl::HasOrInheritsAssignmentOperator_pb<_Tbase_class2>::value \
 					&& (!std::is_same<Tgnii_vector_xscope_cslsstrong_iterator_type<_TVector>, mse::impl::remove_reference_t<_Ty2mse_uao> >::value) \
 					&& ((!mse::impl::is_a_pair_with_the_first_a_base_of_the_second<_Tbase_class2, _Ty2mse_uao>::value) || std::is_same<_Tbase_class2, mse::impl::remove_reference_t<_Ty2mse_uao> >::value)> MSE_IMPL_EIS > \
 				auto& operator=(const _Ty2mse_uao& _X) { base_class::operator=(_X); return (*this); }
@@ -1324,7 +1324,7 @@ namespace mse {
 					/* If you get a compile error here: User-defined copy constructors are potentially dangerous. We can ensure safety by
 					"structure locking" the source vector, but some vector types (like nii_vector<>) do not support being locked through a
 					const reference, so this (const reference) copy constructor is not supported for those vectors. */
-					mse::impl::T_valid_if_true_type_msepointerbasics<typename mse::impl::disjunction<std::is_trivially_copy_constructible<_Ty>, std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag> >::type>(); /*m_debug_size = size();*/ }
+					mse::impl::T_valid_if_true_type_pb<typename mse::impl::disjunction<std::is_trivially_copy_constructible<_Ty>, std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag> >::type>(); /*m_debug_size = size();*/ }
 				typedef typename std_vector::const_iterator _It;
 				/* Note that safety cannot be guaranteed when using these constructors that take unsafe typename base_class::iterator and/or pointer parameters. */
 				gnii_vector(_It _F, _It _L, const _A& _Al = _A()) : base_class(_F, _L, _Al) { /*m_debug_size = size();*/ }
@@ -1359,7 +1359,7 @@ namespace mse {
 					/* If you get a compile error here: User-defined copy constructors are potentially dangerous. We can ensure safety by
 					"structure locking" the source vector, but some vector types (like nii_vector<>) do not support being locked through a
 					const reference, so this (const reference) copy assignment operator is not supported for those vectors. */
-					mse::impl::T_valid_if_true_type_msepointerbasics<typename mse::impl::disjunction<mse::impl::conjunction<std::is_trivially_copy_constructible<_Ty>, std::is_trivially_move_constructible<_Ty>, std::is_trivially_destructible<_Ty> >
+					mse::impl::T_valid_if_true_type_pb<typename mse::impl::disjunction<mse::impl::conjunction<std::is_trivially_copy_constructible<_Ty>, std::is_trivially_move_constructible<_Ty>, std::is_trivially_destructible<_Ty> >
 						, std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag> >::type>();
 					noop_or_structure_no_change_guard<typename mse::impl::conjunction<std::is_trivially_copy_constructible<_Ty>, std::is_trivially_move_constructible<_Ty>, std::is_trivially_destructible<_Ty> >::type, decltype(_X.m_structure_change_mutex)> lock(_X.m_structure_change_mutex);
 					contained_vector().operator=(_X.contained_vector());
@@ -1548,12 +1548,12 @@ namespace mse {
 					/*m_debug_size = size();*/
 				}
 
-				value_type *data() _NOEXCEPT
+				MSE_DEPRECATED value_type *data() _NOEXCEPT
 				{	// return pointer to mutable data vector
 					return contained_vector().data();
 				}
 
-				const value_type *data() const _NOEXCEPT
+				MSE_DEPRECATED const value_type *data() const _NOEXCEPT
 				{	// return pointer to nonmutable data vector
 					return contained_vector().data();
 				}
@@ -1585,32 +1585,32 @@ namespace mse {
 				which is in turn used by mstd::vector<>. */
 
 				ss_iterator_type ss_begin() {	// return std_vector::iterator for beginning of mutable sequence
-					ss_iterator_type retval(this);
+					ss_iterator_type retval(this, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
 				ss_const_iterator_type ss_begin() const {	// return std_vector::iterator for beginning of nonmutable sequence
-					ss_const_iterator_type retval(this);
+					ss_const_iterator_type retval(this, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
 				ss_iterator_type ss_end() {	// return std_vector::iterator for end of mutable sequence
-					ss_iterator_type retval(this);
+					ss_iterator_type retval(this, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
 				ss_const_iterator_type ss_end() const {	// return std_vector::iterator for end of nonmutable sequence
-					ss_const_iterator_type retval(this);
+					ss_const_iterator_type retval(this, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
 				ss_const_iterator_type ss_cbegin() const {	// return std_vector::iterator for beginning of nonmutable sequence
-					ss_const_iterator_type retval(this);
+					ss_const_iterator_type retval(this, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
 				ss_const_iterator_type ss_cend() const {	// return std_vector::iterator for end of nonmutable sequence
-					ss_const_iterator_type retval(this);
+					ss_const_iterator_type retval(this, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
@@ -1798,7 +1798,7 @@ namespace mse {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
 					typedef mse::impl::conditional_t<std::is_const<mse::impl::remove_reference_t<decltype(*owner_ptr)> >::value
 						, Tss_const_iterator_type<_TVectorPointer>, Tss_iterator_type<_TVectorPointer> > return_type;
-					return_type retval(owner_ptr);
+					return_type retval(owner_ptr, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
@@ -1808,7 +1808,7 @@ namespace mse {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
 					typedef mse::impl::conditional_t<std::is_const<mse::impl::remove_reference_t<decltype(*owner_ptr)> >::value
 						, Tss_const_iterator_type<_TVectorPointer>, Tss_iterator_type<_TVectorPointer> > return_type;
-					return_type retval(owner_ptr);
+					return_type retval(owner_ptr, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
@@ -1816,7 +1816,7 @@ namespace mse {
 				template<typename _TVectorPointer>
 				static auto ss_cbegin(const _TVectorPointer& owner_ptr) {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
-					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr);
+					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
@@ -1829,7 +1829,7 @@ namespace mse {
 				template<typename _TVectorPointer>
 				static auto ss_cend(const _TVectorPointer& owner_ptr) {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
-					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr);
+					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
@@ -2090,6 +2090,10 @@ namespace mse {
 				}
 
 
+				/* Note that uncommonly, the comparison operators have distinct const and non-const implementaions.
+				This is because the container needs to be "locked" during the operation, and locking support is not
+				necessarily the same between const and non-const function calls. */
+
 				bool operator==(_Myt& _Right) {	// test for vector equality
 					structure_no_change_guard<decltype(_Right.m_structure_change_mutex)> lock1(_Right.m_structure_change_mutex);
 					structure_no_change_guard<decltype(m_structure_change_mutex)> lock2(m_structure_change_mutex);
@@ -2099,7 +2103,7 @@ namespace mse {
 					/* If you get a compile error here: User-defined comparison operators are potentially dangerous. We can ensure safety by
 					"structure locking" the source vector, but some vector types (like nii_vector<>) do not support being locked through a
 					const reference, so this (const reference) comparison operator is not supported for those vectors. */
-					mse::impl::T_valid_if_true_type_msepointerbasics<typename std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag>::type>();
+					mse::impl::T_valid_if_true_type_pb<typename std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag>::type>();
 					structure_no_change_guard<decltype(_Right.m_structure_change_mutex)> lock1(_Right.m_structure_change_mutex);
 					structure_no_change_guard<decltype(m_structure_change_mutex)> lock2(m_structure_change_mutex);
 
@@ -2114,12 +2118,20 @@ namespace mse {
 					/* If you get a compile error here: User-defined comparison operators are potentially dangerous. We can ensure safety by
 					"structure locking" the source vector, but some vector types (like nii_vector<>) do not support being locked through a
 					const reference, so this (const reference) comparison operator is not supported for those vectors. */
-					mse::impl::T_valid_if_true_type_msepointerbasics<typename std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag>::type>();
+					mse::impl::T_valid_if_true_type_pb<typename std::is_same<TConstLockableIndicator, gnii_vector_const_lockable_tag>::type>();
 					structure_no_change_guard<decltype(_Right.m_structure_change_mutex)> lock1(_Right.m_structure_change_mutex);
 					structure_no_change_guard<decltype(m_structure_change_mutex)> lock2(m_structure_change_mutex);
 
 					return (contained_vector() < _Right.contained_vector());
 				}
+#ifndef MSE_HAS_CXX20
+				bool operator!=(const _Myt& _Right_cref) const { return !((*this) == _Right_cref); }
+				bool operator>(const _Myt& _Right_cref) const { return (_Right_cref < (*this)); }
+				bool operator<=(const _Myt& _Right_cref) const { return !((*this) > _Right_cref); }
+				bool operator>=(const _Myt& _Right_cref) const { return !((*this) < _Right_cref); }
+#else // !MSE_HAS_CXX20
+				std::strong_ordering operator<=>(const _Myt& _Right_cref) const = delete;
+#endif // !MSE_HAS_CXX20
 
 				template<class _Ty2, class _Traits2>
 				std::basic_ostream<_Ty2, _Traits2>& write_bytes(std::basic_ostream<_Ty2, _Traits2>& _Ostr, size_type byte_count, const size_type byte_start_offset = 0) const {
@@ -2602,6 +2614,21 @@ namespace mse {
 	}
 #endif // !defined(MSE_SCOPEPOINTER_DISABLED)
 
+#ifdef MSE_HAS_CXX20
+	template<typename _Ty>
+	std::strong_ordering spaceship_operator_equivalent(const _Ty& _Left_cref, const _Ty& _Right_cref) {
+		signed char res = 0;
+		if (!(_Left_cref == _Right_cref)) {
+			if (_Left_cref < _Right_cref) {
+				res = -1;
+			}
+			else {
+				res = 1;
+			}
+		}
+		return (res <=> 0); /* that's the right order, right? */
+	}
+#endif // MSE_HAS_CXX20
 
 	/* stnii_basic_vector<> is a "low-overhead" vector that is not eligible to be shared among threads and does not
 	support implicit iterators. */
@@ -2643,6 +2670,26 @@ namespace mse {
 		MSE_USING(stnii_vector, base_class);
 
 		stnii_vector(_XSTD initializer_list<value_type> _Ilist, const _A& _Al = _A()) : base_class(_Ilist, _Al) {}
+
+		/* We don't want just to inherit the comparison operators because the base class (template) has a deleted
+		<=> operator and distinct const and non-const implementations that aren't entirely appropriate for this
+		class. */
+		friend bool operator==(const _Myt& _Left_cref, const _Myt& _Right_cref) {
+			const base_class& lhs = _Left_cref;
+			const base_class& rhs = _Right_cref;
+			return (lhs == rhs);
+		}
+		MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_IF_ANY(stnii_vector)
+#ifndef MSE_HAS_CXX20
+		friend bool operator<(const _Myt& _Left_cref, const _Myt& _Right_cref) {
+			const base_class& lhs = _Left_cref; const base_class& rhs = _Right_cref;
+			return (lhs < rhs);
+		}
+#else // !MSE_HAS_CXX20
+		friend std::strong_ordering operator<=>(const _Myt& _Left_cref, const _Myt& _Right_cref) {
+			return spaceship_operator_equivalent<base_class>(_Left_cref, _Right_cref);
+		}
+#endif // !MSE_HAS_CXX20
 	};
 
 	namespace impl {
@@ -3011,7 +3058,7 @@ namespace mse {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
 					typedef mse::impl::conditional_t<std::is_const<mse::impl::remove_reference_t<decltype(*owner_ptr)> >::value
 						, Tss_const_iterator_type<_TVectorPointer>, Tss_iterator_type<_TVectorPointer> > return_type;
-					return_type retval(owner_ptr);
+					return_type retval(owner_ptr, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
@@ -3021,7 +3068,7 @@ namespace mse {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
 					typedef mse::impl::conditional_t<std::is_const<mse::impl::remove_reference_t<decltype(*owner_ptr)> >::value
 						, Tss_const_iterator_type<_TVectorPointer>, Tss_iterator_type<_TVectorPointer> > return_type;
-					return_type retval(owner_ptr);
+					return_type retval(owner_ptr, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
@@ -3029,7 +3076,7 @@ namespace mse {
 				template<typename _TVectorPointer>
 				static auto ss_cbegin(const _TVectorPointer& owner_ptr) {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
-					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr);
+					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr, 0);
 					retval.set_to_beginning();
 					return retval;
 				}
@@ -3037,7 +3084,7 @@ namespace mse {
 				template<typename _TVectorPointer>
 				static auto ss_cend(const _TVectorPointer& owner_ptr) {
 					mse::impl::T_valid_if_not_an_xscope_type<_TVectorPointer>();
-					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr);
+					Tss_const_iterator_type<_TVectorPointer> retval(owner_ptr, 0);
 					retval.set_to_end_marker();
 					return retval;
 				}
@@ -3086,12 +3133,19 @@ namespace mse {
 				typedef TXScopeCSSSXSRAConstIterator<_Myt> xscope_const_iterator;
 				typedef TXScopeCSSSXSRAIterator<_Myt> xscope_iterator;
 
-				bool operator==(const _Myt& _Right) const {	// test for vector equality
-					return (_Right.contained_vector() == contained_vector());
+				friend bool operator==(const _Myt& _Left, const _Myt& _Right) {
+					return (_Left.contained_vector() == _Right.contained_vector());
 				}
-				bool operator<(const _Myt& _Right) const {	// test if _Left < _Right for vectors
-					return (contained_vector() < _Right.contained_vector());
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_IF_ANY(fixed_nii_vector_base)
+#ifndef MSE_HAS_CXX20
+				friend bool operator<(const _Myt& _Left, const _Myt& _Right) {
+					return (_Left.contained_vector() < _Right.contained_vector());
 				}
+#else // !MSE_HAS_CXX20
+				friend std::strong_ordering operator<=>(const _Myt& _Left, const _Myt& _Right) {
+					return (_Left.contained_vector() <=> _Right.contained_vector());
+				}
+#endif // !MSE_HAS_CXX20
 
 				template<class _Ty2, class _Traits2>
 				std::basic_ostream<_Ty2, _Traits2>& write_bytes(std::basic_ostream<_Ty2, _Traits2>& _Ostr, size_type byte_count, const size_type byte_start_offset = 0) const {
@@ -3129,26 +3183,6 @@ namespace mse {
 				friend /*class */xscope_ss_const_iterator_type;
 				friend /*class */xscope_ss_iterator_type;
 			};
-
-			template<class _Ty, class _A = std::allocator<_Ty>> inline bool operator!=(const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Left,
-				const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Right) {	// test for vector inequality
-				return (!(_Left == _Right));
-			}
-
-			template<class _Ty, class _A = std::allocator<_Ty>> inline bool operator>(const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Left,
-				const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Right) {	// test if _Left > _Right for vectors
-				return (_Right < _Left);
-			}
-
-			template<class _Ty, class _A = std::allocator<_Ty>> inline bool operator<=(const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Left,
-				const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Right) {	// test if _Left <= _Right for vectors
-				return (!(_Right < _Left));
-			}
-
-			template<class _Ty, class _A = std::allocator<_Ty>> inline bool operator>=(const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Left,
-				const mse::us::impl::fixed_nii_vector_base<_Ty, _A>& _Right) {	// test if _Left >= _Right for vectors
-				return (!(_Left < _Right));
-			}
 		}
 	}
 
@@ -3507,7 +3541,11 @@ namespace mse {
 		typedef typename base_class::reverse_iterator reverse_iterator;
 		typedef typename base_class::const_reverse_iterator const_reverse_iterator;
 
+#ifndef MSE_IMPL_MOVE_ENABLED_FOR_BORROWING_FIXED
+		xscope_borrowing_fixed_nii_vector(xscope_borrowing_fixed_nii_vector&&) = delete;
+#else // !MSE_IMPL_MOVE_ENABLED_FOR_BORROWING_FIXED
 		xscope_borrowing_fixed_nii_vector(xscope_borrowing_fixed_nii_vector&&) = default;
+#endif // !MSE_IMPL_MOVE_ENABLED_FOR_BORROWING_FIXED
 
 		xscope_borrowing_fixed_nii_vector(const mse::TXScopeFixedPointer<_TLender>& src_xs_ptr) : m_src_ref(*src_xs_ptr) {
 			(*this).contained_vector() = std::move(m_src_ref);
@@ -3524,21 +3562,25 @@ namespace mse {
 		MSE_INHERIT_XSCOPE_ASYNC_SHAREABILITY_OF(base_class);
 
 	private:
-#ifdef MSE_HAS_CXX17
 		xscope_borrowing_fixed_nii_vector(const xscope_borrowing_fixed_nii_vector&) = delete;
-#endif // MSE_HAS_CXX17
 
 		_TLender& m_src_ref;
 	};
 
+#ifdef MSE_HAS_CXX17
+	/* deduction guides */
 	template<class _TLender>
-	auto make_xscope_borrowing_fixed_nii_vector(const mse::TXScopeFixedPointer<_TLender>& src_xs_ptr) -> xscope_borrowing_fixed_nii_vector<_TLender> {
-		return xscope_borrowing_fixed_nii_vector<_TLender>(src_xs_ptr);
+	xscope_borrowing_fixed_nii_vector(mse::TXScopeFixedPointer<_TLender>)->xscope_borrowing_fixed_nii_vector<_TLender>;
+#endif /* MSE_HAS_CXX17 */
+
+	template<class _TLender>
+	auto make_xscope_borrowing_fixed_nii_vector(const mse::TXScopeFixedPointer<_TLender>& src_xs_ptr) {
+		return mse::TXScopeObj<xscope_borrowing_fixed_nii_vector<_TLender> >(src_xs_ptr);
 	}
 #if !defined(MSE_SCOPEPOINTER_DISABLED)
 	template<class _TLender>
-	auto make_xscope_borrowing_fixed_nii_vector(_TLender* src_xs_ptr) -> xscope_borrowing_fixed_nii_vector<_TLender> {
-		return xscope_borrowing_fixed_nii_vector<_TLender>(src_xs_ptr);
+	auto make_xscope_borrowing_fixed_nii_vector(_TLender* src_xs_ptr) {
+		return mse::TXScopeObj<xscope_borrowing_fixed_nii_vector<_TLender> >(src_xs_ptr);
 	}
 #endif // !defined(MSE_SCOPEPOINTER_DISABLED)
 
@@ -4225,6 +4267,8 @@ namespace mse {
 				MSE_INHERITED_RANDOM_ACCESS_MEMBER_TYPE_DECLARATIONS(_Myt);
 			};
 
+			class mm_iterator_type;
+
 			/* mm_const_iterator_type acts much like a list iterator. */
 			class mm_const_iterator_type : public random_access_const_iterator_base {
 			public:
@@ -4238,6 +4282,8 @@ namespace mse {
 				typedef typename base_class::const_iterator::reference reference;
 				typedef typename base_class::const_reference const_reference;
 
+				mm_const_iterator_type(const mm_iterator_type& src) : m_points_to_an_item(src.m_points_to_an_item)
+					, m_index(src.m_index), m_owner_cptr(src.m_owner_cptr) {}
 				void reset() { set_to_end_marker(); }
 				bool points_to_an_item() const {
 					if (m_points_to_an_item) { assert((1 <= m_owner_cptr->size()) && (m_index < m_owner_cptr->size())); return true; }
@@ -4323,6 +4369,8 @@ namespace mse {
 					assert(difference_type(m_owner_cptr->size()) >= retval);
 					return retval;
 				}
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_GIVEN_SUBTRACTION(mm_const_iterator_type)
+
 				const_reference operator*() const {
 					return m_owner_cptr->at(msev_as_a_size_t(m_index));
 				}
@@ -4334,26 +4382,6 @@ namespace mse {
 					return std::addressof(m_owner_cptr->at(msev_as_a_size_t(m_index)));
 				}
 				const_reference operator[](difference_type _Off) const { return (*m_owner_cptr).at(msev_as_a_size_t(difference_type(m_index) + _Off)); }
-				/*
-				mm_const_iterator_type& operator=(const typename base_class::const_iterator& _Right_cref)
-				{
-				msev_int d = std::distance<typename base_class::iterator>(m_owner_cptr->cbegin(), _Right_cref);
-				if ((0 <= d) && (m_owner_cptr->size() >= d)) {
-				if (m_owner_cptr->size() == d) {
-				assert(m_owner_cptr->cend() == _Right_cref);
-				m_points_to_an_item = false;
-				} else {
-				m_points_to_an_item = true;
-				}
-				m_index = msev_size_t(d);
-				base_class::const_iterator::operator=(_Right_cref);
-				}
-				else {
-				MSE_THROW(msevector_range_error("doesn't seem to be a valid assignment value - mm_const_iterator_type& operator=(const typename base_class::const_iterator& _Right_cref) - mm_const_iterator_type - msevector"));
-				}
-				return (*this);
-				}
-				*/
 				mm_const_iterator_type& operator=(const mm_const_iterator_type& _Right_cref)
 				{
 					if (((*this).m_owner_cptr) == (_Right_cref.m_owner_cptr)) {
@@ -4366,18 +4394,6 @@ namespace mse {
 					}
 					return (*this);
 				}
-				bool operator==(const mm_const_iterator_type& _Right_cref) const {
-					if (((*this).m_owner_cptr) != (_Right_cref.m_owner_cptr)) { MSE_THROW(msevector_range_error("invalid argument - mm_const_iterator_type& operator==(const mm_const_iterator_type& _Right) - mm_const_iterator_type - msevector")); }
-					return (_Right_cref.m_index == m_index);
-				}
-				bool operator!=(const mm_const_iterator_type& _Right_cref) const { return (!(_Right_cref == (*this))); }
-				bool operator<(const mm_const_iterator_type& _Right) const {
-					if (((*this).m_owner_cptr) != (_Right.m_owner_cptr)) { MSE_THROW(msevector_range_error("invalid argument - mm_const_iterator_type& operator<(const mm_const_iterator_type& _Right) - mm_const_iterator_type - msevector")); }
-					return (m_index < _Right.m_index);
-				}
-				bool operator<=(const mm_const_iterator_type& _Right) const { return (((*this) < _Right) || (_Right == (*this))); }
-				bool operator>(const mm_const_iterator_type& _Right) const { return (!((*this) <= _Right)); }
-				bool operator>=(const mm_const_iterator_type& _Right) const { return (!((*this) < _Right)); }
 				void set_to_const_item_pointer(const mm_const_iterator_type& _Right_cref) {
 					(*this) = _Right_cref;
 				}
@@ -4526,33 +4542,8 @@ namespace mse {
 				difference_type operator-(const mm_const_iterator_type& _Right_cref) const {
 					return (mm_const_iterator_type(*this) - _Right_cref);
 				}
-				bool operator==(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) == _Right_cref); }
-				bool operator!=(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) != _Right_cref); }
-				bool operator<(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) < _Right_cref); }
-				bool operator>(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) > _Right_cref); }
-				bool operator<=(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) <= _Right_cref); }
-				bool operator>=(const mm_const_iterator_type& _Right_cref) const { return (mm_const_iterator_type(*this) >= _Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_OPERATOR_DELEGATING_DECLARATIONS(mm_iterator_type, mm_const_iterator_type)
 
-				/*
-				mm_iterator_type& operator=(const typename base_class::iterator& _Right_cref)
-				{
-				msev_int d = std::distance<typename base_class::iterator>(m_owner_ptr->begin(), _Right_cref);
-				if ((0 <= d) && (m_owner_ptr->size() >= d)) {
-				if (m_owner_ptr->size() == d) {
-				assert(m_owner_ptr->end() == _Right_cref);
-				m_points_to_an_item = false;
-				} else {
-				m_points_to_an_item = true;
-				}
-				m_index = msev_size_t(d);
-				base_class::iterator::operator=(_Right_cref);
-				}
-				else {
-				MSE_THROW(msevector_range_error("doesn't seem to be a valid assignment value - mm_iterator_type& operator=(const typename base_class::iterator& _Right_cref) - mm_const_iterator_type - msevector"));
-				}
-				return (*this);
-				}
-				*/
 				mm_iterator_type& operator=(const mm_iterator_type& _Right_cref)
 				{
 					if (((*this).m_owner_ptr) == (_Right_cref.m_owner_ptr)) {
@@ -4589,6 +4580,7 @@ namespace mse {
 				msev_size_t position() const {
 					return m_index;
 				}
+				/*
 				operator mm_const_iterator_type() const {
 					assert(m_owner_ptr);
 					mm_const_iterator_type retval(*m_owner_ptr);
@@ -4596,6 +4588,7 @@ namespace mse {
 					retval.advance(msev_int(m_index));
 					return retval;
 				}
+				*/
 				void async_not_shareable_and_not_passable_tag() const {}
 
 				/* We actually want to make this constructor private, but doing so seems to break std::make_shared<mm_iterator_type>.  */
@@ -4608,6 +4601,7 @@ namespace mse {
 				msev_bool m_points_to_an_item = false;
 				msev_size_t m_index = 0;
 				_Myt* m_owner_ptr = nullptr;
+				friend class mm_const_iterator_type;
 				friend class mm_iterator_set_type;
 				friend class /*_Myt*/msevector<_Ty, _A, _TStateMutex>;
 			};
@@ -4985,18 +4979,14 @@ namespace mse {
 				cipointer operator+(difference_type n) const { auto retval = (*this); retval += n; return retval; }
 				cipointer operator-(difference_type n) const { return ((*this) + (-n)); }
 				difference_type operator-(const cipointer& _Right_cref) const { return const_item_pointer() - (_Right_cref.const_item_pointer()); }
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_GIVEN_SUBTRACTION(cipointer)
+
 				const_reference operator*() const { return const_item_pointer().operator*(); }
 				const_reference item() const { return operator*(); }
 				const_reference previous_item() const { return const_item_pointer().previous_item(); }
 				const_pointer operator->() const { return const_item_pointer().operator->(); }
 				const_reference operator[](difference_type _Off) const { return const_item_pointer()[_Off]; }
 				cipointer& operator=(const cipointer& _Right_cref) { const_item_pointer().operator=(_Right_cref.const_item_pointer()); return (*this); }
-				bool operator==(const cipointer& _Right_cref) const { return const_item_pointer().operator==(_Right_cref.const_item_pointer()); }
-				bool operator!=(const cipointer& _Right_cref) const { return (!(_Right_cref == (*this))); }
-				bool operator<(const cipointer& _Right) const { return (const_item_pointer() < _Right.const_item_pointer()); }
-				bool operator<=(const cipointer& _Right) const { return (const_item_pointer() <= _Right.const_item_pointer()); }
-				bool operator>(const cipointer& _Right) const { return (const_item_pointer() > _Right.const_item_pointer()); }
-				bool operator>=(const cipointer& _Right) const { return (const_item_pointer() >= _Right.const_item_pointer()); }
 				void set_to_const_item_pointer(const cipointer& _Right_cref) { const_item_pointer().set_to_const_item_pointer(_Right_cref.const_item_pointer()); }
 				msev_size_t position() const { return const_item_pointer().position(); }
 				auto target_container_ptr() const {
@@ -5072,12 +5062,7 @@ namespace mse {
 				difference_type operator-(const cipointer& _Right_cref) const {
 					return (cipointer(*this) - _Right_cref);
 				}
-				bool operator==(const cipointer& _Right_cref) const { return (cipointer(*this) == _Right_cref); }
-				bool operator!=(const cipointer& _Right_cref) const { return (cipointer(*this) != _Right_cref); }
-				bool operator<(const cipointer& _Right_cref) const { return (cipointer(*this) < _Right_cref); }
-				bool operator>(const cipointer& _Right_cref) const { return (cipointer(*this) > _Right_cref); }
-				bool operator<=(const cipointer& _Right_cref) const { return (cipointer(*this) <= _Right_cref); }
-				bool operator>=(const cipointer& _Right_cref) const { return (cipointer(*this) >= _Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_OPERATOR_DELEGATING_DECLARATIONS(ipointer, cipointer)
 
 				ipointer& operator=(const ipointer& _Right_cref) { item_pointer().operator=(_Right_cref.item_pointer()); return (*this); }
 				void set_to_item_pointer(const ipointer& _Right_cref) { item_pointer().set_to_item_pointer(_Right_cref.item_pointer()); }
@@ -5619,6 +5604,8 @@ namespace mse {
 				xscope_cipointer operator+(difference_type n) const { auto retval = (*this); retval += n; return retval; }
 				xscope_cipointer operator-(difference_type n) const { return ((*this) + (-n)); }
 				difference_type operator-(const xscope_cipointer& _Right_cref) const { return cipointer::operator-(_Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_IMPLIED_OPERATOR_DECLARATIONS_GIVEN_SUBTRACTION(xscope_cipointer)
+
 				const_reference operator*() const { return cipointer::operator*(); }
 				const_reference item() const { return operator*(); }
 				const_reference previous_item() const { return cipointer::previous_item(); }
@@ -5633,12 +5620,6 @@ namespace mse {
 					if ((&(*_Right_cref.target_container_ptr())) != (&(*(*this).target_container_ptr()))) { MSE_THROW(msevector_range_error("invalid argument - xscope_cipointer& operator=(const ipointer& _Right_cref) - msevector::xscope_cipointer")); }
 					return operator=(cipointer(_Right_cref));
 				}
-				bool operator==(const xscope_cipointer& _Right_cref) const { return cipointer::operator==(_Right_cref); }
-				bool operator!=(const xscope_cipointer& _Right_cref) const { return (!(_Right_cref == (*this))); }
-				bool operator<(const xscope_cipointer& _Right) const { return cipointer::operator<(_Right); }
-				bool operator<=(const xscope_cipointer& _Right) const { return cipointer::operator<=(_Right); }
-				bool operator>(const xscope_cipointer& _Right) const { return cipointer::operator>(_Right); }
-				bool operator>=(const xscope_cipointer& _Right) const { return cipointer::operator>=(_Right); }
 				void set_to_const_item_pointer(const xscope_cipointer& _Right_cref) { cipointer::set_to_item_pointer(_Right_cref); }
 				msev_size_t position() const { return cipointer::position(); }
 				auto target_container_ptr() const {
@@ -5711,12 +5692,7 @@ namespace mse {
 				difference_type operator-(const xscope_cipointer& _Right_cref) const {
 					return (xscope_cipointer(*this) - _Right_cref);
 				}
-				bool operator==(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) == _Right_cref); }
-				bool operator!=(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) != _Right_cref); }
-				bool operator<(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) < _Right_cref); }
-				bool operator>(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) > _Right_cref); }
-				bool operator<=(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) <= _Right_cref); }
-				bool operator>=(const xscope_cipointer& _Right_cref) const { return (xscope_cipointer(*this) >= _Right_cref); }
+				MSE_IMPL_ORDERED_TYPE_OPERATOR_DELEGATING_DECLARATIONS(xscope_ipointer, xscope_cipointer)
 
 				xscope_ipointer& operator=(const ipointer& _Right_cref) {
 					if ((&(*_Right_cref.target_container_ptr())) != (&(*(*this).target_container_ptr()))) { MSE_THROW(msevector_range_error("invalid argument - xscope_ipointer& operator=(const xscope_ipointer& _Right_cref) - msevector::xscope_ipointer")); }

@@ -85,7 +85,7 @@ namespace mse {
 		namespace impl {
 			namespace ns_thread_local {
 
-				template<typename _Ty> class TThreadLocalID {};
+				class TThreadLocalID {};
 
 				/* Objects of thread_local duration are still prone to being accessed after destruction, and therefore still
 				need appropriate safety mechanisms. However, in the case where the object has a trivial destructor,
@@ -104,11 +104,11 @@ namespace mse {
 
 				template<typename _Ty>
 				using TThreadLocalConstPointerBaseBase = mse::impl::conditional_t<use_unchecked_base_type<_Ty>::value
-					, mse::us::impl::TPointerForLegacy<const _Ty, TThreadLocalID<const _Ty>>, mse::TNDNoradConstPointer<_Ty>>;
+					, mse::us::impl::TPointer<const _Ty, TThreadLocalID>, mse::TNDNoradConstPointer<_Ty>>;
 
 				template<typename _Ty>
 				using TThreadLocalPointerBaseBase = mse::impl::conditional_t<use_unchecked_base_type<_Ty>::value
-					, mse::us::impl::TPointerForLegacy<_Ty, TThreadLocalID<_Ty>>, mse::TNDNoradPointer<_Ty>>;
+					, mse::us::impl::TPointer<_Ty, TThreadLocalID>, mse::TNDNoradPointer<_Ty>>;
 
 				template<typename _TROz>
 				class TThreadLocalObjBase : public TThreadLocalObjBaseBase<_TROz> {
@@ -328,12 +328,6 @@ namespace mse {
 				return (*this);
 			}
 
-			/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-#ifndef MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator _Ty* () const { return base_class::operator _Ty * (); }
-#endif // !MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator TThreadLocalObj<_Ty>*() const { return base_class::operator TThreadLocalObj<_Ty>*(); }
-
 			MSE_DEFAULT_OPERATOR_NEW_AND_AMPERSAND_DECLARATION;
 
 			friend class TThreadLocalFixedPointer<_Ty>;
@@ -366,11 +360,6 @@ namespace mse {
 				return *this;
 			}
 
-			/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-#ifndef MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator const _Ty* () const { return base_class::operator const _Ty * (); }
-#endif // !MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator const TThreadLocalObj<_Ty>* () const { return base_class::operator const TThreadLocalObj<_Ty> * (); }
 			//TThreadLocalNotNullConstPointer(typename base_class::scope_obj_base_const_ptr_t ptr) : base_class(ptr) {}
 			TThreadLocalNotNullConstPointer(const typename base_class::base_class& ptr) : base_class(ptr) {}
 
@@ -388,11 +377,6 @@ namespace mse {
 			TThreadLocalFixedPointer(const TThreadLocalFixedPointer<_Ty2>& src_cref) : base_class(src_cref) {}
 			MSE_IMPL_DESTRUCTOR_PREFIX1 ~TThreadLocalFixedPointer() {}
 			operator bool() const { return (*static_cast<const base_class*>(this)); }
-			/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-#ifndef MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator _Ty* () const { return base_class::operator _Ty * (); }
-#endif // !MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator TThreadLocalObj<_Ty>*() const { return base_class::operator TThreadLocalObj<_Ty>*(); }
 			void thread_local_tag() const {}
 
 		private:
@@ -421,11 +405,6 @@ namespace mse {
 			TThreadLocalFixedConstPointer(const TThreadLocalFixedPointer<_Ty2>& src_cref) : base_class(src_cref) {}
 			MSE_IMPL_DESTRUCTOR_PREFIX1 ~TThreadLocalFixedConstPointer() {}
 			operator bool() const { return (*static_cast<const base_class*>(this)); }
-			/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-#ifndef MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator const _Ty* () const { return base_class::operator const _Ty * (); }
-#endif // !MSE_SCOPEPOINTER_DISABLED
-			MSE_DEPRECATED explicit operator const TThreadLocalObj<_Ty>*() const { return base_class::operator const TThreadLocalObj<_Ty>*(); }
 			void thread_local_tag() const {}
 
 		private:

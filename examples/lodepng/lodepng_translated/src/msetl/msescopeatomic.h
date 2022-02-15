@@ -60,7 +60,7 @@ namespace mse {
 #define MSE_SCOPE_ATOMIC_USING(Derived, Base) MSE_USING(Derived, Base)
 
 	namespace impl {
-		template<typename _Ty> class TScopeAtomicID {};
+		class TScopeAtomicID {};
 	}
 
 #ifdef MSE_SCOPEPOINTER_DISABLED
@@ -160,9 +160,9 @@ namespace mse {
 			};
 
 			template<typename _Ty>
-			class TXScopeAtomicPointerBase : public mse::us::impl::TPointerForLegacy<std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >> {
+			class TXScopeAtomicPointerBase : public mse::us::impl::TPointer<std::atomic<_Ty>, mse::impl::TScopeAtomicID> {
 			public:
-				typedef mse::us::impl::TPointerForLegacy<std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >> base_class;
+				typedef mse::us::impl::TPointer<std::atomic<_Ty>, mse::impl::TScopeAtomicID> base_class;
 				TXScopeAtomicPointerBase(const TXScopeAtomicPointerBase&) = default;
 				TXScopeAtomicPointerBase(TXScopeAtomicPointerBase&&) = default;
 				TXScopeAtomicPointerBase(TXScopeAtomicObj<_Ty>& scpobj_ref) : base_class(&(static_cast<TXScopeAtomicObjBase<_Ty>&>(scpobj_ref))) {}
@@ -176,9 +176,9 @@ namespace mse {
 			};
 
 			template<typename _Ty>
-			class TXScopeAtomicConstPointerBase : public mse::us::impl::TPointerForLegacy<const std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >> {
+			class TXScopeAtomicConstPointerBase : public mse::us::impl::TPointer<const std::atomic<_Ty>, mse::impl::TScopeAtomicID> {
 			public:
-				typedef mse::us::impl::TPointerForLegacy<const std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >> base_class;
+				typedef mse::us::impl::TPointer<const std::atomic<_Ty>, mse::impl::TScopeAtomicID> base_class;
 				TXScopeAtomicConstPointerBase(const TXScopeAtomicConstPointerBase&) = default;
 				TXScopeAtomicConstPointerBase(TXScopeAtomicConstPointerBase&&) = default;
 				TXScopeAtomicConstPointerBase(const TXScopeAtomicPointerBase<_Ty>& src_cref) : base_class(src_cref) {}
@@ -192,8 +192,8 @@ namespace mse {
 				}
 			};
 
-			template<typename _Ty> using TXScopeAtomicItemPointerBase = mse::us::impl::TPointerForLegacy<std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >>;
-			template<typename _Ty> using TXScopeAtomicItemConstPointerBase = mse::us::impl::TPointerForLegacy<const std::atomic<_Ty>, mse::impl::TScopeAtomicID<const std::atomic<_Ty> >>;
+			template<typename _Ty> using TXScopeAtomicItemPointerBase = mse::us::impl::TPointer<std::atomic<_Ty>, mse::impl::TScopeAtomicID>;
+			template<typename _Ty> using TXScopeAtomicItemConstPointerBase = mse::us::impl::TPointer<const std::atomic<_Ty>, mse::impl::TScopeAtomicID>;
 
 #endif // MSE_SCOPEPOINTER_RUNTIME_CHECKS_ENABLED
 
@@ -322,9 +322,6 @@ namespace mse {
 			return (*this);
 		}
 		operator bool() const { return (*static_cast<const TXScopeAtomicPointer<_Ty>*>(this)); }
-		/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-		MSE_DEPRECATED explicit operator _Ty*() const { return TXScopeAtomicPointer<_Ty>::operator _Ty*(); }
-		MSE_DEPRECATED explicit operator TXScopeAtomicObj<_Ty>*() const { return TXScopeAtomicPointer<_Ty>::operator TXScopeAtomicObj<_Ty>*(); }
 
 		MSE_DEFAULT_OPERATOR_NEW_AND_AMPERSAND_DECLARATION;
 
@@ -345,9 +342,6 @@ namespace mse {
 		//TXScopeAtomicNotNullConstPointer(const TXScopeAtomicNotNullPointer<_Ty2>& src_cref) : TXScopeAtomicConstPointer<_Ty>(src_cref) {}
 		TXScopeAtomicNotNullConstPointer(const TXScopeAtomicObj<_Ty>& scpobj_cref) : TXScopeAtomicConstPointer<_Ty>(scpobj_cref) {}
 		operator bool() const { return (*static_cast<const TXScopeAtomicConstPointer<_Ty>*>(this)); }
-		/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-		MSE_DEPRECATED explicit operator const _Ty*() const { return TXScopeAtomicConstPointer<_Ty>::operator const _Ty*(); }
-		MSE_DEPRECATED explicit operator const TXScopeAtomicObj<_Ty>*() const { return TXScopeAtomicConstPointer<_Ty>::operator const TXScopeAtomicObj<_Ty>*(); }
 
 		MSE_DEFAULT_OPERATOR_NEW_AND_AMPERSAND_DECLARATION;
 
@@ -364,9 +358,6 @@ namespace mse {
 		//TXScopeAtomicFixedPointer(const TXScopeAtomicFixedPointer<_Ty2>& src_cref) : TXScopeAtomicNotNullPointer<_Ty>(src_cref) {}
 		~TXScopeAtomicFixedPointer() {}
 		operator bool() const { return (*static_cast<const TXScopeAtomicNotNullPointer<_Ty>*>(this)); }
-		/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-		MSE_DEPRECATED explicit operator _Ty*() const { return TXScopeAtomicNotNullPointer<_Ty>::operator _Ty*(); }
-		MSE_DEPRECATED explicit operator TXScopeAtomicObj<_Ty>*() const { return TXScopeAtomicNotNullPointer<_Ty>::operator TXScopeAtomicObj<_Ty>*(); }
 		void xscope_tag() const {}
 		void xscope_async_passable_tag() const {} /* Indication that this type is eligible to be passed between threads. */
 
@@ -400,9 +391,6 @@ namespace mse {
 		//TXScopeAtomicFixedConstPointer(const TXScopeAtomicFixedPointer<_Ty2>& src_cref) : TXScopeAtomicNotNullConstPointer<_Ty>(src_cref) {}
 		~TXScopeAtomicFixedConstPointer() {}
 		operator bool() const { return (*static_cast<const TXScopeAtomicNotNullConstPointer<_Ty>*>(this)); }
-		/* This native pointer cast operator is just for compatibility with existing/legacy code and ideally should never be used. */
-		MSE_DEPRECATED explicit operator const _Ty*() const { return TXScopeAtomicNotNullConstPointer<_Ty>::operator const _Ty*(); }
-		MSE_DEPRECATED explicit operator const TXScopeAtomicObj<_Ty>*() const { return TXScopeAtomicNotNullConstPointer<_Ty>::operator const TXScopeAtomicObj<_Ty>*(); }
 		void xscope_tag() const {}
 		void xscope_async_passable_tag() const {} /* Indication that this type is eligible to be passed between threads. */
 
@@ -1057,11 +1045,11 @@ namespace mse {
 						assert(false);
 					}
 
-					mse::us::impl::TPointerForLegacy<std::atomic<shareable_A_t> > pfl_ptr1 = &a;
+					mse::us::impl::TPointer<std::atomic<shareable_A_t> > pfl_ptr1 = &a;
 					if (!(pfl_ptr1 != nullptr)) {
 						assert(false);
 					}
-					mse::us::impl::TPointerForLegacy<std::atomic<shareable_A_t> > pfl_ptr2 = nullptr;
+					mse::us::impl::TPointer<std::atomic<shareable_A_t> > pfl_ptr2 = nullptr;
 					if (!(pfl_ptr1 != pfl_ptr2)) {
 						assert(false);
 					}
