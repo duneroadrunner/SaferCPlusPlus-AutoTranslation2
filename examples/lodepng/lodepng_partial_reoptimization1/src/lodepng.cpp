@@ -1130,8 +1130,9 @@ static unsigned getTreeInflateDynamic(mse::lh::TLHNullableAnyPointer<HuffmanTree
 }
 
 /*inflate a block with dynamic of fixed Huffman tree*/
-static unsigned inflateHuffmanBlock(mse::lh::TLHNullableAnyPointer<ucvector>  out, mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  in, mse::lh::TXScopeLHNullableAnyPointer<unsigned long>  bp,
-                                    mse::lh::TXScopeLHNullableAnyPointer<unsigned long>  pos, size_t inlength, unsigned btype)
+template<typename TBp, typename TPos>
+static unsigned inflateHuffmanBlock(mse::lh::TLHNullableAnyPointer<ucvector>  out, mse::lh::TLHNullableAnyRandomAccessIterator<const unsigned char>  in, TBp bp,
+    TPos pos, size_t inlength, unsigned btype)
 {
   unsigned error = 0;
   mse::TNoradObj<HuffmanTree > tree_ll; /*the huffman tree for literal and length codes*/
@@ -1233,16 +1234,12 @@ static unsigned inflateHuffmanBlock(mse::lh::TLHNullableAnyPointer<ucvector>  ou
       }
   }
   auto maybe_out_nnnptr = mse::maybe_any_cast<mse::TNoradNotNullPointer<ucvector> >(out);
-  auto maybe_b_xsptr = mse::maybe_any_cast<mse::TXScopeFixedPointer<mse::TInt<unsigned long> > >(bp);
-  auto maybe_pos_xsptr = mse::maybe_any_cast<mse::TXScopeFixedPointer<mse::TInt<unsigned long> > >(pos);
-  if (maybe_in_sviter.has_value() && maybe_out_nnnptr.has_value() && maybe_b_xsptr.has_value() && maybe_pos_xsptr.has_value()) {
+  if (maybe_in_sviter.has_value() && maybe_out_nnnptr.has_value()) {
       auto in_sviter = maybe_in_sviter.value();
       auto out_xs_store = mse::make_xscope_strong_pointer_store(maybe_out_nnnptr.value());
       auto out_xsptr = out_xs_store.xscope_ptr();
-      auto b_xsptr = maybe_b_xsptr.value();
-      auto pos_xsptr = maybe_pos_xsptr.value();
 
-      loop1(in_sviter, out_xsptr, b_xsptr, pos_xsptr);
+      loop1(in_sviter, out_xsptr, bp, pos);
   }
   else {
       loop1(in, out, bp, pos);
