@@ -76,4 +76,10 @@ So anyway, we can just manually change the declaration of the argument variables
 
 Now the code should compile and work. 
 
+But note that at this point, while greatly improved, the converted code still does not fully conform to the safety restrictions enforced by scpptool. For example, in the following [line](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/440d2adb9f12b25a7bbe0be089ed8349d9d37669/examples/lodepng/lodepng_translated/src/lodepng.cpp#L5755) from the converted code:
 
+```cpp
+      if(strlen(mse::us::lh::make_raw_pointer_from(info.text_keys[i])) > 79)
+```
+
+the `strlen()` function from the C standard library, which has an unsafe interface, continues to be used because, at the time of writing, the SaferCPlusPlus library does not yet provide a safe substitute for it.
