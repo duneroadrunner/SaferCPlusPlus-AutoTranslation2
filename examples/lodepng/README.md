@@ -83,3 +83,5 @@ But note that at this point, while greatly improved, the converted code still do
 ```
 
 the `strlen()` function from the C standard library, which has an unsafe interface, continues to be used because, at the time of writing, the SaferCPlusPlus library does not yet provide a safe substitute for it.
+
+Note that this default (one-to-one) conversion results in code that is not performance optimal. Manually recovering lost performance is demonstrated in the [lodepng_partial_reoptimization1](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/tree/master/examples/lodepng/lodepng_partial_reoptimization1) subdirectory.
