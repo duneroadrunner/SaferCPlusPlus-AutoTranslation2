@@ -4,14 +4,14 @@
 SCRIPT_DIR="$(dirname "$0")"
 
 date
-date &> root_compile_and_link1_out.txt
-echo -e "" &>> root_compile_and_link1_out.txt
+date &> at_compile_and_link1_output.txt
+echo -e "" &>> at_compile_and_link1_output.txt
 
 set -x
 
-echo -e "" &>> root_compile_and_link1_out.txt
+echo -e "" &>> at_compile_and_link1_output.txt
 
-clang++ -DGNULIB_NAMESPACE=gnulib -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build/wgetrc\" -DLOCALEDIR=\"./wget-build/share/locale\" -I. -I./wget-1.25.0/src -I./msetl  -I./wget-1.25.0/lib  -I./wget-build/src  -I./wget-build/lib      -DHAVE_LIBSSL -DHAVE_STRLCPY -DO_BINARY=0 -DO_TEXT=0 -DO_SEARCH=O_RDONLY -g -std=c++23 -x c++ "./wget-1.25.0/src/main.c" "./wget-1.25.0/src/connect.c" "./wget-1.25.0/src/css_.c" "./wget-1.25.0/src/build_info.c" "./wget-1.25.0/src/hsts.c" "./wget-1.25.0/src/ftp-ls.c" "./wget-1.25.0/src/ftp.c" "./wget-1.25.0/src/hash.c" "./wget-1.25.0/src/netrc.c" "./wget-1.25.0/src/css-url.c" "./wget-1.25.0/src/xattr.c" "./wget-1.25.0/src/warc.c" "./wget-1.25.0/src/utils.c" "./wget-1.25.0/src/url.c" "./wget-1.25.0/src/spider.c" "./wget-1.25.0/src/retr.c" "./wget-1.25.0/src/recur.c" "./wget-1.25.0/src/res.c" "./wget-1.25.0/src/progress.c" "./wget-1.25.0/src/openssl.c" "./wget-1.25.0/src/metalink.c" "./wget-1.25.0/src/log.c" "./wget-1.25.0/src/init.c" "./wget-1.25.0/src/http-ntlm.c" "./wget-1.25.0/src/ptimer.c" "./wget-1.25.0/src/html-url.c" "./wget-1.25.0/src/html-parse.c" "./wget-1.25.0/src/host.c" "./wget-1.25.0/src/ftp-opie.c" "./wget-1.25.0/src/ftp-basic.c" "./wget-1.25.0/src/exits.c" "./wget-1.25.0/src/cookies.c" "./wget-1.25.0/src/convert.c" "./wget-1.25.0/src/http.c" "./wget-1.25.0/lib/base32.c" "./wget-1.25.0/lib/basename-lgpl.c" "./wget-1.25.0/lib/c-strcasecmp.c" "./wget-1.25.0/lib/c-strncasecmp.c" "./wget-1.25.0/lib/md5.c" "./wget-1.25.0/lib/sha1-stream.c" "./wget-1.25.0/lib/sha1.c" "./wget-1.25.0/lib/sha256.c" "./wget-1.25.0/lib/basename.c" "./wget-1.25.0/lib/malloc/dynarray_resize.c" "./wget-1.25.0/lib/exitfail.c" "./wget-1.25.0/lib/fflush.c" "./wget-1.25.0/lib/free.c" "./wget-1.25.0/lib/fseek.c" "./wget-1.25.0/lib/fseeko.c" "./wget-1.25.0/lib/hard-locale.c" "./wget-1.25.0/lib/ioctl.c" "./wget-1.25.0/lib/localcharset.c" "./wget-1.25.0/lib/mbchar.c" "./wget-1.25.0/lib/mbrtowc.c" "./wget-1.25.0/lib/quotearg.c" "./wget-1.25.0/lib/regex.c" "./wget-1.25.0/lib/setlocale_null.c" "./wget-1.25.0/lib/timegm.c" "./wget-1.25.0/lib/tmpdir.c" "./wget-1.25.0/lib/xmalloc.c" "./wget-1.25.0/lib/xalloc-die.c" "./wget-1.25.0/lib/xmemdup0.c" "./wget-1.25.0/lib/xstrndup.c" "./wget-1.25.0/lib/mktime.c" "./wget-1.25.0/lib/glthread/once.c" "./wget-1.25.0/lib/setlocale_null-unlocked.c" "./wget-build/src/version.c" -lpcre2-8 -lz -lssl -lcrypto -luuid &>> root_compile_and_link1_out.txt
+clang++ -DGNULIB_NAMESPACE=gnulib -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build/wgetrc\" -DLOCALEDIR=\"./wget-build/share/locale\" -I. -I./wget-1.25.0/src -I./msetl  -I./wget-1.25.0/lib  -I./wget-build/src  -I./wget-build/lib      -DHAVE_LIBSSL -DHAVE_STRLCPY -DO_BINARY=0 -DO_TEXT=0 -DO_SEARCH=O_RDONLY -g -std=c++23 -x c++ -o at_wget "./wget-1.25.0/src/main.c" "./wget-1.25.0/src/connect.c" "./wget-1.25.0/src/css_.c" "./wget-1.25.0/src/build_info.c" "./wget-1.25.0/src/hsts.c" "./wget-1.25.0/src/ftp-ls.c" "./wget-1.25.0/src/ftp.c" "./wget-1.25.0/src/hash.c" "./wget-1.25.0/src/netrc.c" "./wget-1.25.0/src/css-url.c" "./wget-1.25.0/src/xattr.c" "./wget-1.25.0/src/warc.c" "./wget-1.25.0/src/utils.c" "./wget-1.25.0/src/url.c" "./wget-1.25.0/src/spider.c" "./wget-1.25.0/src/retr.c" "./wget-1.25.0/src/recur.c" "./wget-1.25.0/src/res.c" "./wget-1.25.0/src/progress.c" "./wget-1.25.0/src/openssl.c" "./wget-1.25.0/src/metalink.c" "./wget-1.25.0/src/log.c" "./wget-1.25.0/src/init.c" "./wget-1.25.0/src/http-ntlm.c" "./wget-1.25.0/src/ptimer.c" "./wget-1.25.0/src/html-url.c" "./wget-1.25.0/src/html-parse.c" "./wget-1.25.0/src/host.c" "./wget-1.25.0/src/ftp-opie.c" "./wget-1.25.0/src/ftp-basic.c" "./wget-1.25.0/src/exits.c" "./wget-1.25.0/src/cookies.c" "./wget-1.25.0/src/convert.c" "./wget-1.25.0/src/http.c" "./wget-1.25.0/lib/base32.c" "./wget-1.25.0/lib/basename-lgpl.c" "./wget-1.25.0/lib/c-strcasecmp.c" "./wget-1.25.0/lib/c-strncasecmp.c" "./wget-1.25.0/lib/md5.c" "./wget-1.25.0/lib/sha1-stream.c" "./wget-1.25.0/lib/sha1.c" "./wget-1.25.0/lib/sha256.c" "./wget-1.25.0/lib/basename.c" "./wget-1.25.0/lib/malloc/dynarray_resize.c" "./wget-1.25.0/lib/exitfail.c" "./wget-1.25.0/lib/fflush.c" "./wget-1.25.0/lib/free.c" "./wget-1.25.0/lib/fseek.c" "./wget-1.25.0/lib/fseeko.c" "./wget-1.25.0/lib/hard-locale.c" "./wget-1.25.0/lib/ioctl.c" "./wget-1.25.0/lib/localcharset.c" "./wget-1.25.0/lib/mbchar.c" "./wget-1.25.0/lib/mbrtowc.c" "./wget-1.25.0/lib/quotearg.c" "./wget-1.25.0/lib/regex.c" "./wget-1.25.0/lib/setlocale_null.c" "./wget-1.25.0/lib/timegm.c" "./wget-1.25.0/lib/tmpdir.c" "./wget-1.25.0/lib/xmalloc.c" "./wget-1.25.0/lib/xalloc-die.c" "./wget-1.25.0/lib/xmemdup0.c" "./wget-1.25.0/lib/xstrndup.c" "./wget-1.25.0/lib/mktime.c" "./wget-1.25.0/lib/glthread/once.c" "./wget-1.25.0/lib/setlocale_null-unlocked.c" "./wget-build/src/version.c" -lpcre2-8 -lz -lssl -lcrypto -luuid &>> at_compile_and_link1_output.txt
 
 
 # files that include <io.h>:
@@ -37,13 +37,13 @@ clang++ -DGNULIB_NAMESPACE=gnulib -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build
 
 set +x
 
-echo -e "" &>> root_compile_and_link1_out.txt
+echo -e "" &>> at_compile_and_link1_output.txt
 
-date &>> root_compile_and_link1_out.txt
+date &>> at_compile_and_link1_output.txt
 date
 
 echo -n "errors: "
-cat root_compile_and_link1_out.txt | grep -c -i -e ": error: " -e "error generated." -e "errors generated."
+cat at_compile_and_link1_output.txt | grep -c -i -e ": error: " -e "error generated." -e "errors generated."
 echo -n "warnings: "
-cat root_compile_and_link1_out.txt | grep -c -i -e ": warning: " -e "warning generated." -e "warnings generated."
+cat at_compile_and_link1_output.txt | grep -c -i -e ": warning: " -e "warning generated." -e "warnings generated."
 
