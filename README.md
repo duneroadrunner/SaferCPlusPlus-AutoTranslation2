@@ -78,7 +78,7 @@ The auto-converter will convert many of the commonly used standard library calls
 
 ### Auto-conversion of C to valid C++
 
-One of the key design features of C++ was backward compatability with C. While largely compatible (at least with 1990s era C), there are significant incompatibilities that make it likely that legacy C code bases that didn't adopt a policy of C++ compatibility will generate compiler errors when compiled as C++. So scpptool has another feature that helps convert (1990s style) C code to valid C++ (while remaining valid C). Most of the required changes are relatively minor and straightforward, some differences, such as C++'s extra restrictions on the use of `goto`, are a little more involved (and in the case of `goto`s, may involve a little code restructuring).
+One of the key design features of C++ was backward compatability with C. While largely compatible (at least with 1990s-era C), there are significant incompatibilities that make it likely that legacy C code bases that didn't adopt a policy of C++ compatibility will generate compiler errors when compiled as C++. So scpptool has another feature that helps convert (1990s-style) C code to valid C++ (while remaining valid C). While most of the required changes are relatively minor and straightforward, some differences, such as C++'s extra restrictions on the use of `goto`, are a little more involved (and in the case of `goto`s, may involve a little code restructuring).
 
 ### Potential usage scenarios
 
