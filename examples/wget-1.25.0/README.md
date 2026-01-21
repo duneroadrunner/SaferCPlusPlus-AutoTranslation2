@@ -60,6 +60,7 @@ These are the steps used to execute the auto-translation on an Ubuntu (24.04 x64
 	- copy the `include` subdirectory to the `examples/wget-1.25.0` directory and rename it to `msetl`
 - download the [scpptool zip file](https://github.com/duneroadrunner/scpptool/archive/refs/heads/master.zip) to the `examples/wget-1.25.0` directory and extract it
 	- build scpptool by following the [build instructions](https://github.com/duneroadrunner/scpptool#how-to-build)
+- note: The next two scripts will invoke the scpptool conversion features which will attempt to modify in-place all specified source files *and any directly or indirectly included files*. So you generally want to be careful not to invoke the scpptool conversion features with root privileges or with write permission to any installed libraries to ensure that scpptool doesn't inadvertently modify system or installed library header files.
 - from the `examples/wget-1.25.0` directory, run `at_c2validcpp_all1.sh` 
 - from the `examples/wget-1.25.0` directory, run `at_convert2scpp_all1.sh` 
 - from the `examples/wget-1.25.0` directory, run `at_compile_and_link1.sh` 
