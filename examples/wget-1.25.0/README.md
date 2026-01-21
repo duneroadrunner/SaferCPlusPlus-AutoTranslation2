@@ -72,6 +72,24 @@ These are the steps used to execute the auto-translation on an Ubuntu (24.04 x64
 
 Note that, not having a very good understanding of the existing wget build process, the conversion and "compile_and_link" scripts were created in rudimentary fashion by simply looking for source files referred to in the existing makefile and using a process of trial-and-error to prune those files that didn't seem to be necessary (at least on our platform). All this to say that, while they serve to demonstrate simply how the auto-conversion can be done, they don't necessarily serve as a recommendation for how the build system should end up. 
 
+The `at_c2validcpp_all1.sh` script calls another script which invokes the scpptool feature that converts (1990s-style) C source that doesn't qualify as valid C++ to a subset of C that (hopefully) compiles as C++. The actual scpptool command used is:
+
+    ./scpptool-master/src/scpptool -ConvertC2ValidCpp -SuppressPrompts $@ -- -DGNULIB_NAMESPACE=gnulib -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build/wgetrc\" -DLOCALEDIR=\"./wget-build/share/locale\" -I. -I./wget-1.25.0/src  -I./wget-1.25.0/lib  -I./wget-build/src  -I./wget-build/lib      -DHAVE_LIBSSL -DHAVE_STRLCPY -DO_BINARY=0 -DO_TEXT=0 -DO_SEARCH=O_RDONLY -c > scppt_conv_out1.txt
+
+The options after the `--` double-dashes are just the wget-specific compiler options. 
+
+And the `at_convert2scpp_all1.sh` script calls another script which invokes the scpptool feature that converts C++ source files to the (essentially) memory-safe subset of C++. The actual scpptool command used here is:
+
+    ./scpptool-master/src/scpptool -ConvertToSCPP -AddPrecedingIncludeConfigDotHDirective -ModifiablePath ./wget-1.25.0/src -ModifiablePath ./wget-build/src/version.c -SuppressPrompts $@ -- -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build/wgetrc\" -DLOCALEDIR=\"./wget-build/share/locale\" -I. -I./wget-1.25.0/src -I./msetl  -I./wget-1.25.0/lib  -I./wget-build/src  -I./wget-build/lib      -DHAVE_LIBSSL -DHAVE_STRLCPY -DO_BINARY=0 -DO_TEXT=0 -DO_SEARCH=O_RDONLY -std=c++23 -c -x c++ > scppt_conv_out1.txt
+
+Again, the options after the `--` double-dashes are mostly the wget-specific compiler options. The `-x c++` is used because the source files still have their original `.c` file extensions, but we want them to be interpreted as C++ files as the `-ConvertToSCPP` option only supports converting from valid C++ source.
+
+The `-AddPrecedingIncludeConfigDotHDirective` option indicates that `#include "config.h"` should be inserted before any other include directives, including the include directives for the SaferCPlusPlus library. It's (potentially) needed for wget and other gnu utilities because they use (the generated, platform-specific) `config.h` to replace standard system functions and interfaces with their own versions.
+
+Also note that the second `-ModifiablePath` option is used to specify just a single file.
+
+The `$@` is just the bash symbol that represents all of the arguments passed to the script. In this case it will be all of the source filenames. Unlike the C++ compiler, which can generally be used to compile the source files one at a time before linking, using scpptool to try to convert the source files one at a time generally won't work. Or to be more precise, any files that share one or more common include files generally need to be specified together in one conversion operation. 
+
 ### Conversion and build times
 
 A the time of writing, the conversion process takes a rather long time. (On the order of double digit minutes.) And compiling and linking the converted code isn't fast either. At the current stage of development, not much attention has yet been directed at conversion or build times, so there is presumably plenty of room for improvement. With respect to the conversion, it shouldn't be an inherently slow process, but in our particular implementation, there is an issue where, in the case of nested macro invocations, the clang library we use does not seem to reliably report all of the nested macros that an element given as a macro argument participates in. So, for the moment at least, we resort to an (unoptimized) strategy for finding any unreported nested macros that adds cost to the processing of any element in a macro, and increasing cost correlated to the macro nesting depth. 
