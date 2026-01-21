@@ -1,6 +1,6 @@
 Jan 2026
 
-This subdirectory contains some files needed for the conversion of wget version 1.25.0 to the SaferCPlusPlus safe subset of C++. The conversion is done using the scpptool. 
+This subdirectory contains some files needed for the conversion of wget version 1.25.0 to the SaferCPlusPlus safe subset of C++. The conversion is done using the [scpptool](https://github.com/duneroadrunner/scpptool). 
 
 First, let's note that in the case of wget (and presumably it would be the same for the other GNU utility programs), the auto-converted C++ code will compile under clang++ but not g++. It turns out that the GNU utilities are available on so many platforms, not because the code is portable, but rather because the code has been *ported* to (and maintained for) so many platforms. This is reflected in the sources being riddled with a lot of code contained within preprocessor directives like `#if defined __clang__`, or `#if __GLIBC__ + (__GLIBC_MINOR__ >= 16) > 2`, or whatnot.
 
