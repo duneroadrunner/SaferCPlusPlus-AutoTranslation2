@@ -70,6 +70,21 @@ These are the steps used to execute the auto-translation on an Ubuntu (24.04 x64
 
     ./at_wget https://www.wikipedia.org/portal/wikipedia.org/assets/img/Wikipedia-logo-v2.png
 
+The following are rather boring videos of the above instructions being carried out in real- and elapsed- time. There probably isn't any reason to watch them unless you are looking for some visual clarification of the instructions.
+
+part 1:
+
+https://github.com/user-attachments/assets/088f1661-0773-4f2a-a1fd-3f6391b5aa68
+
+part 2:
+
+https://github.com/user-attachments/assets/f90480a2-a460-4b06-b863-12e5354a7568
+
+part 3:
+
+https://github.com/user-attachments/assets/b15719fb-722a-47b3-a1fe-ea0ef348fdfd
+
+
 Note that, not having a very good understanding of the existing wget build process, the conversion and "compile_and_link" scripts were created in rudimentary fashion by simply looking for source files referred to in the existing makefile and using a process of trial-and-error to prune those files that didn't seem to be necessary (at least on our platform). All this to say that, while they serve to demonstrate simply how the auto-conversion can be done, they don't necessarily serve as a recommendation for how the build system should end up. 
 
 The `at_c2validcpp_all1.sh` script calls another script which invokes the scpptool feature that converts (1990s-style) C source that doesn't qualify as valid C++ to a subset of C that (hopefully) compiles as C++. The actual scpptool command used is:
