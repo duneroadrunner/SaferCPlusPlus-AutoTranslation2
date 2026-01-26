@@ -1,4 +1,4 @@
-Dec 2025
+Jan 2025
 
 # SaferCPlusPlus-AutoTranslation2
 
@@ -90,6 +90,24 @@ Manually modernizing such code potentially sacrifices some of the value of the t
 
 Note though, that while the auto-conversion may be less prone to introducing new unintended behavior, it may also be prone to raising exceptions in cases where the original code may have "worked just fine", but doesn't meet the standards of "correctness" of the scpptool-enforced subset. For example, we've encountered code that assigns a `char const**` to a `void*` and then at some point later casts that `void*` value to a `char**`. While this code "worked" in practice, it is technically a `const`-correctness violation and the auto-converted code throws an exception (or executes the user-specified custom behavior, if any) upon the `const`-correctness violating cast attempt. And one may not find out about it until they encounter it at run-time. One can of course, insert exception handling code to deal with such potential unforseen exceptions with some degree of "gracefullness".
 
-Though not the primary intended use case, in theory the auto-conversion could be used as simply a build step, allowing one to maintain their codebase in legacy form and, for certain build targets, produce a (more) memory-safe executable. 
+Though not the primary intended use case, in theory the auto-conversion could be used as simply a build step, allowing one to maintain their codebase in legacy form and, for certain build targets, produce a (more) memory-safe executable. Reliability (and speed) improvements to the auto-converter may be needed before this kind of use case becomes generally practical.
 
-Note though, that not all legacy code can be auto-converted. It has to be, in some sense, at least "reasonable". While arguably some might want to use this as a "disciplining" measure to enforce some level of "reasonableness" on the legacy code, any code section that fails to auto-convert can generally be (manually) marked/annotated as "unsafe" and not to be converted. The auto-converter can generally accommodate such annotated code. Though reliability improvements to the auto-converter may be needed before this kind of use case becomes generally practical.
+### Unreasonable or intrinsically unsafe code
+
+One of the reasons that code elements might not get converted to the safe subset that we didn't mention in the ["Interfacing with unsafe APIs"](#interfacing-with-unsafe-apis) section is simply that the code might be "unreasonable" or intrinsically unsafe. Probably the most common reason the auto-translator would assess a piece of code to be intrinsically unsafe is that it involves type-punning or essentially a reinterpret cast. C-style casts that are not assessed to be "reasonable" are generally replaced with `mse::us::lh::unsafe_cast<>()`. 
+
+#### `union`s
+
+The auto-translator also assumes that any `union` could be used for type-punning and so considers them to be intrinsically unsafe. It's important to avoid changing the bit-representation of any element involved in type-punning. That means that not only will the auto-translator leave the definition of the union itself untranslated, but also the definition of any type that is used in the declaration any member of any `union`. 
+
+So even if an object itself does not participate in any `union`, if (any part of) its type is involved in (any part of) the type of any member of any `union`, then the object's type may remain unsafe even after the auto-translation.
+
+And keep in mind that currently, the auto-translator does not add anything to untranslated type definitions to indicate that they were excluded from translation due to their participation in the declaration of a `union` member.
+
+Now, if you have `union`s in your code that you know are not used for type-punning, then you can make them eligible for conversion to the safe subset by simply replacing the `union` keyword with `struct`. (It might be a little less memory-efficient, but if you really are not doing any sort of type-punning, then the behavior should remain the same, right?)
+
+#### variadic functions
+
+Functions with C-style variadic arguments are sort of intrinsically unsafe in (or perhaps "incompatible" with) C++ because, (if we're remembering correctly) for whatever reason, C++ decided that arguments corresponding to variadic parameters would be "passed by bit-copy". That is, even if the argument has copy constructor, it won't get called.
+
+Being used as an argument to a variadic function doesn't generally prevent it from being translated to the safe subset, but the auto-translator may insert a cast back to its (potentially unsafe) C equivalent for the variadic function call.
