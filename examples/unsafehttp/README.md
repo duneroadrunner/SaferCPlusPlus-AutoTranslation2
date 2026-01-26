@@ -28,16 +28,5 @@ Then, to run the http server:
 
 Then connect to the server at `http://localhost:8080`.
 
-### Beware `union`s and the posix socket API
-
-This example actually serves to highlight the distinction between C code practices that simply lack safety enforcement, and those that are *intrinsically* unsafe.
-
-So a bunch of the code that interacts with the posix socket API actually remains unconverted to the safe subset. (And because this web server is so minimal, that ends up being a not-insignificant portion of the whole code base.) The posix socket API is intrinsically unsafe in a kind of interesting and rather egregious way in that it involves the code using it to engage in unsafe type-punning via C `union`s.
-
-`union`s, somewhat uniquely, propagate their unsafety "virally". That is, it's not just that the `union` itself is intrinsically unsafe (and so excluded from translation to the safe subset), but it also results in the definition of any type that is used in any member of any union to also be excluded from translation to the safe subset, even if the type would otherwise be eligible.
-
-The scpptool auto-translator assumes that any `union` might potentially be used for type-punning, which is intrinsically unsafe. It's important to avoid changing the bit-representation of any element involved in type-punning. But this means that even if an object itself does not participate in any `union`, if (any part of) its type is involved in (any part of) the type of any member of any union, then the object's type may remain unsafe even after the auto-translation.
-
-Now, if you have `union`s in your code that you know are not used for type-punning, then you can make them eligible for conversion to the safe subset by simply replacing the `union` keyword with `struct`. (It might be a little less memory-efficient, but if you really are not doing any sort of type-punning, then the behavior should remain the same, right?) But alas, like we said, the `union`s in this project involved with the posix socket API, are engaged in type-punning as part of that API.
-
+Note that a number of `struct` definitions near the beginning of *main.c* remain untranslated due to their participation in the [declaration of `union` members](https://github.com/duneroadrunner/SaferCPlusPlus-AutoTranslation2/blob/master/README.md#unions).
 
