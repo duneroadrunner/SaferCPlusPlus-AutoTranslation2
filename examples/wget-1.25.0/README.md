@@ -88,6 +88,8 @@ https://github.com/user-attachments/assets/b15719fb-722a-47b3-a1fe-ea0ef348fdfd
 
 Note that, not having a very good understanding of the existing wget build process, the conversion and "compile_and_link" scripts were created in rudimentary fashion by simply looking for source files referred to in the existing makefile and using a process of trial-and-error to prune those files that didn't seem to be necessary (at least on our platform). All this to say that, while they serve to demonstrate simply how the auto-conversion can be done, they don't necessarily serve as a recommendation for how the build system should end up. 
 
+The conversion and build scripts will report a crazy number of warnings. These are almost entirely about "C-isms" from the original code that are technically not valid ISO-standard C++, but supported by clang++. 
+
 The `at_c2validcpp_all1.sh` script calls another script which invokes the scpptool feature that converts (1990s-style) C source that doesn't qualify as valid C++ to a subset of C that (hopefully) compiles as C++. The actual scpptool command used is:
 
     ./scpptool-master/src/scpptool -ConvertC2ValidCpp -SuppressPrompts $@ -- -DGNULIB_NAMESPACE=gnulib -DHAVE_CONFIG_H -DSYSTEM_WGETRC=\"./wget-build/wgetrc\" -DLOCALEDIR=\"./wget-build/share/locale\" -I. -I./wget-1.25.0/src  -I./wget-1.25.0/lib  -I./wget-build/src  -I./wget-build/lib      -DHAVE_LIBSSL -DHAVE_STRLCPY -DO_BINARY=0 -DO_TEXT=0 -DO_SEARCH=O_RDONLY -c > scppt_conv_out1.txt
