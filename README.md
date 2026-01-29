@@ -98,7 +98,7 @@ One of the reasons that code elements might not get converted to the safe subset
 
 #### `union`s
 
-The auto-translator also assumes that any `union` could be used for type-punning and so considers them to be intrinsically unsafe. It's important to avoid changing the bit-representation of any element involved in type-punning. That means that not only will the auto-translator leave the definition of the union itself untranslated, but also the definition of any type that is used in the declaration any member of any `union`. 
+The auto-translator also assumes that any `union` could be used for type-punning and so considers them to be intrinsically unsafe. It's important to avoid changing the bit-representation of any element involved in type-punning. That means that not only will the auto-translator leave the definition of the union itself untranslated, but also the definition of any type that is used in the declaration of any member of any `union`. 
 
 So even if an object itself does not participate in any `union`, if (any part of) its type is involved in (any part of) the type of any member of any `union`, then the object's type may remain unsafe even after the auto-translation.
 
