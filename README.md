@@ -108,6 +108,6 @@ Now, if you have `union`s in your code that you know are not used for type-punni
 
 #### variadic functions
 
-Functions with C-style variadic parameters are sort of intrinsically unsafe in (or perhaps "incompatible" with) C++ because, (if we're remembering correctly) for whatever reason, C++ decided that arguments corresponding to variadic parameters would be "passed by bit-copy". That is, even if the argument has copy constructor, it won't get called.
+Functions with C-style variadic parameters are sort of intrinsically unsafe in (or perhaps "incompatible" with) C++ because, (if we're remembering correctly) for whatever reason, C++ decided that arguments corresponding to variadic parameters would be "passed by bit-copy". That is, even if the argument has a copy constructor, it won't get called.
 
 Being used as an argument to a variadic function doesn't generally prevent it from being translated to the safe subset, but the auto-translator may insert a cast back to its (potentially unsafe) C equivalent for the variadic function call.
